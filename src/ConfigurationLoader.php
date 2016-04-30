@@ -10,6 +10,8 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
+
 /**
  * Class ConfigurationLoader
  */
@@ -21,9 +23,9 @@ class ConfigurationLoader
     protected $applicationContext;
 
     /**
-     * @var string
+     * @var ConfigReaderInterface
      */
-    protected $configDir;
+    protected $configReader;
 
     /**
      * @var string
@@ -45,15 +47,15 @@ class ConfigurationLoader
      *
      * @param array $configuration
      * @param string $applicationContext
-     * @param string $configDir
+     * @param ConfigReaderInterface $configReader
      * @param string $envPrefix
      * @param string $envArraySeparator
      */
-    public function __construct(array &$configuration, $applicationContext, $configDir, $envPrefix = 'TYPO3', $envArraySeparator = '__')
+    public function __construct(array &$configuration, $applicationContext, ConfigReaderInterface $configReader, $envPrefix = 'TYPO3', $envArraySeparator = '__')
     {
         $this->configuration = &$configuration;
         $this->applicationContext = $applicationContext;
-        $this->configDir = $configDir;
+        $this->configReader = $configReader;
         $this->envPrefix = $envPrefix;
         $this->envArraySeparator = $envArraySeparator;
     }
@@ -61,11 +63,10 @@ class ConfigurationLoader
     public function load()
     {
         $configName = $this->getContextSlug();
-        $configType = 'php';
-        $this->readIfExists("{$this->configDir}/default.{$configType}");
-        $this->readIfExists("{$this->configDir}/{$configName}.{$configType}");
+        $this->readIfExists('default');
+        $this->readIfExists($configName);
         $this->loadConfigurationFromEnvironment();
-        $this->readIfExists("{$this->configDir}/override.{$configType}");
+        $this->readIfExists('override');
     }
 
     protected function getContextSlug()
@@ -74,13 +75,13 @@ class ConfigurationLoader
     }
 
     /**
-     * @param string $file
+     * @param string $configName
      * @throws InvalidConfigurationFileException
      */
-    protected function readIfExists($file)
+    protected function readIfExists($configName)
     {
-        if (file_exists($file)) {
-            $readConfig = include $file;
+        if ($this->configReader->hasConfig($configName)) {
+            $readConfig = $this->configReader->readConfig($configName);
             if (!is_array($readConfig)) {
                 throw new InvalidConfigurationFileException('Configuration file did not return an array!', 1462008832);
             }

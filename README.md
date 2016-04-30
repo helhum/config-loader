@@ -11,7 +11,7 @@ Usage:
 $configLoader = new ConfigurationLoader(
     $myBaseConfigVarAsReference,
     'Production',
-    __DIR__ . '/Fixture/conf',
+    new PhpFileReader(__DIR__ . '/Fixture/conf'),
     'CONFIG_TEST',
     '__'
 );
