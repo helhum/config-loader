@@ -11,9 +11,9 @@ namespace Helhum\ConfigLoader;
  */
 
 /**
- * Class InvalidConfigurationException
+ * Class InvalidConfigurationFileException
  */
-class InvalidConfigurationException extends \Exception
+class InvalidConfigurationFileException extends \Exception
 {
 
 }

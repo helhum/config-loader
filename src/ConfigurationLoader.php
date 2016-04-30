@@ -10,8 +10,6 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
-use TYPO3\CMS\Core\Utility\ArrayUtility;
-
 /**
  * Class ConfigurationLoader
  */
@@ -76,13 +74,13 @@ class ConfigurationLoader
 
     /**
      * @param string $file
-     * @throws InvalidConfigurationException
+     * @throws InvalidConfigurationFileException
      */
     protected function readIfExists($file) {
         if (file_exists($file)) {
             $readConfig = include $file;
             if (!is_array($readConfig)) {
-                throw new InvalidConfigurationException('Configuration file did not return an array!', 1462008832);
+                throw new InvalidConfigurationFileException('Configuration file did not return an array!', 1462008832);
             }
             $this->configuration = array_replace_recursive($this->configuration, $readConfig);
         }

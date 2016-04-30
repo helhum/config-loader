@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader\Tests;
  */
 
 use Helhum\ConfigLoader\ConfigurationLoader;
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
 
 /**
  * Class ConfigurationLoaderTest
@@ -39,6 +40,20 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('production', $this->baseConfig['key']);
     }
 
+
+    /**
+     * @test
+     * @expectedException \Helhum\ConfigLoader\InvalidConfigurationFileException
+     */
+    public function throwsExceptionOnInvalidConfigFiles()
+    {
+        $configLoader = new ConfigurationLoader(
+            $this->baseConfig,
+            'Production/Broken',
+            __DIR__ . '/Fixture/conf'
+        );
+        $configLoader->load();
+    }
 
     /**
      * @test
