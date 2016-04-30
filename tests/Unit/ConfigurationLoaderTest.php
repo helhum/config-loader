@@ -11,7 +11,6 @@ namespace Helhum\ConfigLoader\Tests;
  */
 
 use Helhum\ConfigLoader\ConfigurationLoader;
-use Helhum\ConfigLoader\InvalidConfigurationFileException;
 
 /**
  * Class ConfigurationLoaderTest
@@ -25,7 +24,7 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         'development_key' => 'base',
         'base_key' => 'base',
     );
-    
+
     /**
      * @test
      */
@@ -39,7 +38,6 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         $configLoader->load();
         $this->assertSame('production', $this->baseConfig['key']);
     }
-
 
     /**
      * @test

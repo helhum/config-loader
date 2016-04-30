@@ -68,7 +68,8 @@ class ConfigurationLoader
         $this->readIfExists("{$this->configDir}/override.{$configType}");
     }
 
-    protected function getContextSlug() {
+    protected function getContextSlug()
+    {
         return strtr(strtolower($this->applicationContext), '/', '.');
     }
 
@@ -76,7 +77,8 @@ class ConfigurationLoader
      * @param string $file
      * @throws InvalidConfigurationFileException
      */
-    protected function readIfExists($file) {
+    protected function readIfExists($file)
+    {
         if (file_exists($file)) {
             $readConfig = include $file;
             if (!is_array($readConfig)) {
