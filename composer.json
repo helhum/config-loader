@@ -1,0 +1,19 @@
+{
+    "name": "helhum/typo3-config-loader",
+    "description" : "Generic TYPO3 config loader with context and environment support.",
+    "license": "GPL-2.0+",
+    "require-dev": {
+        "phpunit/phpunit": "~4.8.0",
+        "mikey179/vfsStream": "~1.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Helhum\\ConfigLoader\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Helhum\\ConfigLoader\\Tests\\": "tests"
+        }
+    }
+}
