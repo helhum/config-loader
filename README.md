@@ -8,14 +8,17 @@ Just require it using composer: `composer require helhum/config-loader`
 Usage:
 
 ```php
-$configLoader = new ConfigurationLoader(
-    $myBaseConfigVarAsReference,
-    'Production',
-    new PhpFileReader(__DIR__ . '/Fixture/conf'),
-    'CONFIG_TEST',
-    '__'
+$context = 'production';
+$confDir = '/path/to/conf';
+$configLoader = new \Helhum\ConfigLoader\ConfigurationLoader(
+    array(
+        new \Helhum\ConfigLoader\Reader\PhpFileReader($confDir . '/default.php'),
+        new \Helhum\ConfigLoader\Reader\PhpFileReader($confDir . '/' . $context . '.php'),
+        new \Helhum\ConfigLoader\Reader\EnvironmentReader('PREFIX'),
+        new \Helhum\ConfigLoader\Reader\PhpFileReader($confDir . '/override.php'),
+    )
 );
-$configLoader->load();
+$config = $configLoader->load();
 ```
 
 ## Feedback

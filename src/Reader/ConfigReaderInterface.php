@@ -16,14 +16,12 @@ namespace Helhum\ConfigLoader\Reader;
 interface ConfigReaderInterface
 {
     /**
-     * @param string $configName
      * @return bool
      */
-    public function hasConfig($configName);
+    public function hasConfig();
 
     /**
-     * @param string $configName
      * @return array
      */
-    public function readConfig($configName);
+    public function readConfig();
 }

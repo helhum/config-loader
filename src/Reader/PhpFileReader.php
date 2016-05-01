@@ -11,40 +11,38 @@ namespace Helhum\ConfigLoader\Reader;
  */
 
 /**
- * Interface ConfigReaderInterface
+ * Class PhpFileReader
  */
 class PhpFileReader implements ConfigReaderInterface
 {
     /**
      * @var string
      */
-    private $configDir;
+    private $configFile;
 
     /**
      * PhpFileReader constructor.
      *
-     * @param string $configDir
+     * @param string $configFile
      */
-    public function __construct($configDir)
+    public function __construct($configFile)
     {
-        $this->configDir = $configDir;
+        $this->configFile = $configFile;
     }
 
     /**
-     * @param string $configName
      * @return bool
      */
-    public function hasConfig($configName)
+    public function hasConfig()
     {
-        return file_exists("{$this->configDir}/$configName.php");
+        return file_exists($this->configFile);
     }
 
     /**
-     * @param string $configName
      * @return array
      */
-    public function readConfig($configName)
+    public function readConfig()
     {
-        return include "{$this->configDir}/$configName.php";
+        return include $this->configFile;
     }
 }

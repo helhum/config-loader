@@ -11,6 +11,8 @@ namespace Helhum\ConfigLoader\Tests;
  */
 
 use Helhum\ConfigLoader\ConfigurationLoader;
+use Helhum\ConfigLoader\Reader\EnvironmentReader;
+use Helhum\ConfigLoader\Reader\PhpFileReader;
 
 /**
  * Class ConfigurationLoaderTest
@@ -30,13 +32,15 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function correctlyLoadsProductionContextConfiguration()
     {
+        $context = 'production';
         $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production',
-            __DIR__ . '/Fixture/conf'
+            array(
+                new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
+                new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
+            )
         );
-        $configLoader->load();
-        $this->assertSame('production', $this->baseConfig['key']);
+        $result = $configLoader->load();
+        $this->assertSame('production', $result['key']);
     }
 
     /**
@@ -46,25 +50,11 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     public function throwsExceptionOnInvalidConfigFiles()
     {
         $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production/Broken',
-            __DIR__ . '/Fixture/conf'
+            array(
+                new PhpFileReader(__DIR__ . '/Fixture/conf/broken.php'),
+            )
         );
         $configLoader->load();
-    }
-
-    /**
-     * @test
-     */
-    public function correctlyLoadsSubContextConfiguration()
-    {
-        $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production/Foo',
-            __DIR__ . '/Fixture/conf'
-        );
-        $configLoader->load();
-        $this->assertSame('production.foo', $this->baseConfig['key']);
     }
 
     /**
@@ -72,13 +62,15 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function correctlyLoadsDevelopmentContextConfiguration()
     {
+        $context = 'development';
         $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Development',
-            __DIR__ . '/Fixture/conf'
+            array(
+                new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
+                new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
+            )
         );
-        $configLoader->load();
-        $this->assertSame('development', $this->baseConfig['development_key']);
+        $result = $configLoader->load();
+        $this->assertSame('development', $result['development_key']);
     }
 
     /**
@@ -86,27 +78,16 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function correctlyLoadsOverrideConfiguration()
     {
+        $context = 'production';
         $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production',
-            __DIR__ . '/Fixture/conf'
+            array(
+                new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
+                new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
+                new PhpFileReader(__DIR__ . '/Fixture/conf/override.php'),
+            )
         );
-        $configLoader->load();
-        $this->assertSame('override', $this->baseConfig['override_key']);
-    }
-
-    /**
-     * @test
-     */
-    public function correctlyLoadsOverridesBaseConfiguration()
-    {
-        $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production',
-            __DIR__ . '/Fixture/conf'
-        );
-        $configLoader->load();
-        $this->assertSame('override', $this->baseConfig['override_key']);
+        $result = $configLoader->load();
+        $this->assertSame('override', $result['override_key']);
     }
 
     /**
@@ -115,14 +96,15 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     public function correctlyLoadsEnvironmentConfiguration()
     {
         $_ENV['CONFIG_TEST__key'] = 'environment';
+        $context = 'production';
         $configLoader = new ConfigurationLoader(
-            $this->baseConfig,
-            'Production',
-            __DIR__ . '/Fixture/conf',
-            'CONFIG_TEST',
-            '__'
+            array(
+                new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
+                new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
+        new EnvironmentReader('CONFIG_TEST'),
+            )
         );
-        $configLoader->load();
-        $this->assertSame('environment', $this->baseConfig['key']);
+        $result = $configLoader->load();
+        $this->assertSame('environment', $result['key']);
     }
 }
