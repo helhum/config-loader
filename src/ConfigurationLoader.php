@@ -29,7 +29,7 @@ class ConfigurationLoader
      */
     public function __construct(array $configReaders)
     {
-        // todo validate instances
+        array_walk($configReaders, array($this, 'ensureValidReader'));
         $this->configReaders = $configReaders;
     }
 
@@ -50,5 +50,12 @@ class ConfigurationLoader
             }
         }
         return $finalConfig;
+    }
+
+    protected function ensureValidReader($potentialReader)
+    {
+        if (!$potentialReader instanceof ConfigReaderInterface) {
+            throw new \RuntimeException('Reader does not implement ConfigReaderInterface', 1462067510);
+        }
     }
 }
