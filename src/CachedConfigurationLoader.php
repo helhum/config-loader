@@ -42,17 +42,15 @@ class CachedConfigurationLoader
     /**
      * CachedConfigurationLoader constructor.
      *
-     * @param array $baseConfiguration
      * @param string $cacheDir
      * @param string $cacheIdentifier
      * @param \Closure $configurationLoaderBuilder
      */
-    public function __construct(array $baseConfiguration, $cacheDir, $cacheIdentifier, \Closure $configurationLoaderBuilder)
+    public function __construct($cacheDir, $cacheIdentifier, \Closure $configurationLoaderBuilder)
     {
         $this->cacheDir = $cacheDir;
         $this->cacheIdentifier = $cacheIdentifier;
         $this->configurationLoaderBuilder = $configurationLoaderBuilder;
-        $this->baseConfiguration = $baseConfiguration;
     }
 
     /**
@@ -66,9 +64,11 @@ class CachedConfigurationLoader
         }
         /** @var ConfigurationLoader $configurationLoader */
         $configurationLoader = call_user_func($this->configurationLoaderBuilder);
-        $finalConfiguration = array_replace_recursive($this->baseConfiguration, $configurationLoader->load());
-        $this->cleanCache();
-        $this->storeCache($finalConfiguration);
+        $finalConfiguration = $configurationLoader->load();
+        if (!empty($this->cacheIdentifier)) {
+            $this->cleanCache();
+            $this->storeCache($finalConfiguration);
+        }
         return $finalConfiguration;
     }
 
