@@ -101,7 +101,7 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
             array(
                 new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
-        new EnvironmentReader('CONFIG_TEST'),
+                new EnvironmentReader('CONFIG_TEST'),
             )
         );
         $result = $configLoader->load();
