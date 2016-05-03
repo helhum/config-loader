@@ -40,11 +40,15 @@ class ConfigurationLoader
     public function load()
     {
         $finalConfig = array();
-        foreach ($this->configReaders as $reader) {
+        foreach ($this->configReaders as $i => $reader) {
             if ($reader->hasConfig()) {
                 $readConfig = $reader->readConfig();
                 if (!is_array($readConfig)) {
-                    throw new InvalidConfigurationFileException('Configuration reader did not return an array!', 1462008832);
+                    throw new InvalidConfigurationFileException(sprintf(
+                        'Configuration reader at index "%d" ("%s") did not return an array!',
+                        $i,
+                        get_class($reader)
+                    ), 1462008832);
                 }
                 $finalConfig = array_replace_recursive($finalConfig, $readConfig);
             }
