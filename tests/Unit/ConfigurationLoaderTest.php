@@ -107,4 +107,44 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         $result = $configLoader->load();
         $this->assertSame('environment', $result['key']);
     }
+
+    /**
+     * @test
+     */
+    public function processorModifiesConfig()
+    {
+        $readerMock = $this->getMockBuilder('Helhum\\ConfigLoader\\Reader\\ConfigReaderInterface')->getMock();
+        $readerMock->expects($this->once())->method('hasConfig')->willReturn(true);
+        $readerMock->expects($this->once())
+            ->method('readConfig')
+            ->willReturn(
+                array(
+                    'foo' => 'bar',
+                )
+            );
+        $processorMock = $this->getMockBuilder('Helhum\\ConfigLoader\\Processor\\ConfigProcessorInterface')->getMock();
+        $processorMock->expects($this->once())
+            ->method('processConfig')
+            ->with(
+                array(
+                    'foo' => 'bar',
+                )
+            )
+            ->willReturn(
+                array(
+                    'foo' => 'baz',
+                )
+            );
+
+        $configLoader = new ConfigurationLoader(
+            array(
+                $readerMock,
+            ),
+            array(
+                $processorMock,
+            )
+        );
+        $result = $configLoader->load();
+        $this->assertSame('baz', $result['foo']);
+    }
 }

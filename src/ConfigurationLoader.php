@@ -10,6 +10,7 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\Processor\ConfigProcessorInterface;
 use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 
 /**
@@ -23,19 +24,27 @@ class ConfigurationLoader
     private $configReaders;
 
     /**
+     * @var ConfigProcessorInterface[]
+     */
+    private $configProcessors;
+
+    /**
      * ConfigurationLoader constructor.
      *
      * @param ConfigReaderInterface[] $configReaders
+     * @param array $configProcessors
      */
-    public function __construct(array $configReaders)
+    public function __construct(array $configReaders, array $configProcessors = array())
     {
         array_walk($configReaders, array($this, 'ensureValidReader'));
+        array_walk($configProcessors, array($this, 'ensureValidProcessor'));
         $this->configReaders = $configReaders;
+        $this->configProcessors = $configProcessors;
     }
 
     /**
-     * @return array
      * @throws InvalidConfigurationFileException
+     * @return array
      */
     public function load()
     {
@@ -53,13 +62,23 @@ class ConfigurationLoader
                 $finalConfig = array_replace_recursive($finalConfig, $readConfig);
             }
         }
+        foreach ($this->configProcessors as $configProcessor) {
+            $finalConfig = $configProcessor->processConfig($finalConfig);
+        }
         return $finalConfig;
     }
 
-    protected function ensureValidReader($potentialReader)
+    private function ensureValidReader($potentialReader)
     {
         if (!$potentialReader instanceof ConfigReaderInterface) {
             throw new \RuntimeException('Reader does not implement ConfigReaderInterface', 1462067510);
+        }
+    }
+
+    private function ensureValidProcessor($potentialProcessor)
+    {
+        if (!$potentialProcessor instanceof ConfigProcessorInterface) {
+            throw new \RuntimeException('Proessor does not implement ConfigProcessorInterface', 1496409084);
         }
     }
 }
