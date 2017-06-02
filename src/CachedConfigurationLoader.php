@@ -54,8 +54,8 @@ class CachedConfigurationLoader
     }
 
     /**
-     * @return array
      * @throws InvalidConfigurationFileException
+     * @return array
      */
     public function load()
     {

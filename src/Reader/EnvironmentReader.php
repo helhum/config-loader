@@ -91,8 +91,8 @@ class EnvironmentReader implements ConfigReaderInterface
      * @param string $path Path in array to search for
      * @param mixed $value Value to set at path location in array
      * @param string $delimiter Path delimiter
-     * @return array Modified array
      * @throws \RuntimeException
+     * @return array Modified array
      */
     public static function setValueByPath(array $array, $path, $value, $delimiter = '/')
     {
