@@ -32,7 +32,7 @@ class ConfigurationLoader
      * ConfigurationLoader constructor.
      *
      * @param ConfigReaderInterface[] $configReaders
-     * @param array $configProcessors
+     * @param ConfigProcessorInterface[] $configProcessors
      */
     public function __construct(array $configReaders, array $configProcessors = array())
     {

@@ -10,9 +10,6 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
-/**
- * Class PhpFileReader
- */
 class PhpFileReader implements ConfigReaderInterface
 {
     /**
