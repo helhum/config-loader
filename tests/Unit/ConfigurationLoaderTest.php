@@ -14,9 +14,6 @@ use Helhum\ConfigLoader\ConfigurationLoader;
 use Helhum\ConfigLoader\Reader\EnvironmentReader;
 use Helhum\ConfigLoader\Reader\PhpFileReader;
 
-/**
- * Class ConfigurationLoaderTest
- */
 class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
 {
     protected $baseConfig = array(
