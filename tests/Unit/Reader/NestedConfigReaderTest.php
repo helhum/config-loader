@@ -32,9 +32,9 @@ class NestedConfigReaderTest extends \PHPUnit_Framework_TestCase
             array(
                 'bla' => array(
                     'fasel' => array(
-                        'foo' => 'bar'
-                    )
-                )
+                        'foo' => 'bar',
+                    ),
+                ),
             ),
             $reader->readConfig()
         );
