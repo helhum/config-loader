@@ -13,7 +13,7 @@ namespace Helhum\ConfigLoader\Reader;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-class YamlReader implements ConfigReaderInterface
+class YamlFileReader implements ConfigReaderInterface
 {
     /**
      * @var string
