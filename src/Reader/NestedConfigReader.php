@@ -40,5 +40,4 @@ class NestedConfigReader implements ConfigReaderInterface
     {
         return ArrayFill::setValue([], $this->configPath, $this->configReader->readConfig());
     }
-
 }

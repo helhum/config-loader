@@ -21,8 +21,8 @@ class ArrayFill
      * @param array $array
      * @param string $configPath Path separated by "."
      * @param mixed $value
-     * @return array
      * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @return array
      */
     public static function setValue(array $array, string $configPath, $value): array
     {

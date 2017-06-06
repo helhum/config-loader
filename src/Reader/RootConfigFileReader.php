@@ -64,6 +64,9 @@ class RootConfigFileReader implements ConfigReaderInterface
             if (!$ignoreErrors && !$reader->hasConfig()) {
                 throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resourceFile), 1496585828);
             }
+            if (!empty($import['path'])) {
+                $reader = new NestedConfigReader($reader, $import['path']);
+            }
             $importedConfig = array_replace_recursive($importedConfig, $reader->readConfig());
         }
         unset($config['imports']);
