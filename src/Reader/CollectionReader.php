@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Reader;
 
 /*
@@ -27,19 +28,12 @@ class CollectionReader implements ConfigReaderInterface
         $this->readers = $readers;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasConfig()
+    public function hasConfig(): bool
     {
         return !empty($this->readers);
     }
 
-    /**
-     * @throws \Helhum\ConfigLoader\InvalidConfigurationFileException
-     * @return array
-     */
-    public function readConfig()
+    public function readConfig(): array
     {
         $configLoader = new ConfigurationLoader($this->readers);
         return $configLoader->load();

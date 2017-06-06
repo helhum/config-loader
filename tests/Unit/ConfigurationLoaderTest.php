@@ -16,13 +16,13 @@ use Helhum\ConfigLoader\Reader\PhpFileReader;
 
 class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
 {
-    protected $baseConfig = array(
+    protected $baseConfig = [
         'key' => 'base',
         'override_key' => 'base',
         'production_key' => 'base',
         'development_key' => 'base',
         'base_key' => 'base',
-    );
+    ];
 
     /**
      * @test
@@ -31,10 +31,10 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $context = 'production';
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
-            )
+            ]
         );
         $result = $configLoader->load();
         $this->assertSame('production', $result['key']);
@@ -47,9 +47,9 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     public function throwsExceptionOnInvalidConfigFiles()
     {
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/broken.php'),
-            )
+            ]
         );
         $configLoader->load();
     }
@@ -61,10 +61,10 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $context = 'development';
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
-            )
+            ]
         );
         $result = $configLoader->load();
         $this->assertSame('development', $result['development_key']);
@@ -77,11 +77,11 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $context = 'production';
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/override.php'),
-            )
+            ]
         );
         $result = $configLoader->load();
         $this->assertSame('override', $result['override_key']);
@@ -95,11 +95,11 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         $_ENV['CONFIG_TEST__key'] = 'environment';
         $context = 'production';
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/default.php'),
                 new PhpFileReader(__DIR__ . '/Fixture/conf/' . $context . '.php'),
                 new EnvironmentReader('CONFIG_TEST'),
-            )
+            ]
         );
         $result = $configLoader->load();
         $this->assertSame('environment', $result['key']);
@@ -115,31 +115,31 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
         $readerMock->expects($this->once())
             ->method('readConfig')
             ->willReturn(
-                array(
+                [
                     'foo' => 'bar',
-                )
+                ]
             );
         $processorMock = $this->getMockBuilder('Helhum\\ConfigLoader\\Processor\\ConfigProcessorInterface')->getMock();
         $processorMock->expects($this->once())
             ->method('processConfig')
             ->with(
-                array(
+                [
                     'foo' => 'bar',
-                )
+                ]
             )
             ->willReturn(
-                array(
+                [
                     'foo' => 'baz',
-                )
+                ]
             );
 
         $configLoader = new ConfigurationLoader(
-            array(
+            [
                 $readerMock,
-            ),
-            array(
+            ],
+            [
                 $processorMock,
-            )
+            ]
         );
         $result = $configLoader->load();
         $this->assertSame('baz', $result['foo']);

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Reader;
 
 /*
@@ -12,13 +13,7 @@ namespace Helhum\ConfigLoader\Reader;
 
 interface ConfigReaderInterface
 {
-    /**
-     * @return bool
-     */
-    public function hasConfig();
+    public function hasConfig(): bool;
 
-    /**
-     * @return array
-     */
-    public function readConfig();
+    public function readConfig(): array;
 }

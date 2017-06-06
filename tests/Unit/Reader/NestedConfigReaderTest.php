@@ -23,19 +23,19 @@ class NestedConfigReaderTest extends \PHPUnit_Framework_TestCase
         $readerMock->expects($this->once())
             ->method('readConfig')
             ->willReturn(
-                array(
+                [
                     'foo' => 'bar',
-                )
+                ]
             );
         $reader = new NestedConfigReader($readerMock, 'bla.fasel');
         $this->assertSame(
-            array(
-                'bla' => array(
-                    'fasel' => array(
+            [
+                'bla' => [
+                    'fasel' => [
                         'foo' => 'bar',
-                    ),
-                ),
-            ),
+                    ],
+                ],
+            ],
             $reader->readConfig()
         );
     }

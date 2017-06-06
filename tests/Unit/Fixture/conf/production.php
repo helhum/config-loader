@@ -1,6 +1,6 @@
 <?php
-return array(
+return [
     'key' => 'production',
     'production_key' => 'production',
     'override_key' => 'production',
-);
+];

@@ -11,6 +11,6 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
-class InvalidConfigurationFileException extends \Exception
+class InvalidArgumentException extends \Exception
 {
 }

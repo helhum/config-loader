@@ -6,8 +6,8 @@
         "php": ">=7.0.0 <7.2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.8.0",
-        "mikey179/vfsStream": "~1.6.0"
+        "phpunit/phpunit": "^5.0",
+        "mikey179/vfsStream": "^1.6"
     },
     "suggest": {
         "symfony/yaml": "To be able to parse yaml files, you will need symfony/yaml"

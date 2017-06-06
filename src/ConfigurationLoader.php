@@ -31,10 +31,10 @@ class ConfigurationLoader
      * @param ConfigReaderInterface[] $configReaders
      * @param ConfigProcessorInterface[] $configProcessors
      */
-    public function __construct(array $configReaders, array $configProcessors = array())
+    public function __construct(array $configReaders, array $configProcessors = [])
     {
-        array_walk($configReaders, array($this, 'ensureValidReader'));
-        array_walk($configProcessors, array($this, 'ensureValidProcessor'));
+        array_walk($configReaders, [$this, 'ensureValidReader']);
+        array_walk($configProcessors, [$this, 'ensureValidProcessor']);
         $this->configReaders = $configReaders;
         $this->configProcessors = $configProcessors;
     }
@@ -45,18 +45,19 @@ class ConfigurationLoader
      */
     public function load()
     {
-        $finalConfig = array();
+        $finalConfig = [];
         foreach ($this->configReaders as $i => $reader) {
             if ($reader->hasConfig()) {
-                $readConfig = $reader->readConfig();
-                if (!is_array($readConfig)) {
+                try {
+                    $readConfig = $reader->readConfig();
+                    $finalConfig = array_replace_recursive($finalConfig, $readConfig);
+                } catch (\TypeError $e) {
                     throw new InvalidConfigurationFileException(sprintf(
                         'Configuration reader at index "%d" ("%s") did not return an array!',
                         $i,
                         get_class($reader)
-                    ), 1462008832);
+                    ), 1462008832, $e);
                 }
-                $finalConfig = array_replace_recursive($finalConfig, $readConfig);
             }
         }
         foreach ($this->configProcessors as $configProcessor) {
@@ -68,14 +69,14 @@ class ConfigurationLoader
     private function ensureValidReader($potentialReader)
     {
         if (!$potentialReader instanceof ConfigReaderInterface) {
-            throw new \RuntimeException('Reader does not implement ConfigReaderInterface', 1462067510);
+            throw new InvalidArgumentException('Reader does not implement ConfigReaderInterface', 1462067510);
         }
     }
 
     private function ensureValidProcessor($potentialProcessor)
     {
         if (!$potentialProcessor instanceof ConfigProcessorInterface) {
-            throw new \RuntimeException('Proessor does not implement ConfigProcessorInterface', 1496409084);
+            throw new InvalidArgumentException('Proessor does not implement ConfigProcessorInterface', 1496409084);
         }
     }
 }

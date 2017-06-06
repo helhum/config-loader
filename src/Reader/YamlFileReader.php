@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Reader;
 
 /*
@@ -20,29 +21,17 @@ class YamlFileReader implements ConfigReaderInterface
      */
     private $configFile;
 
-    /**
-     * PhpFileReader constructor.
-     *
-     * @param string $configFile
-     */
-    public function __construct($configFile)
+    public function __construct(string $configFile)
     {
         $this->configFile = $configFile;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasConfig()
+    public function hasConfig(): bool
     {
         return file_exists($this->configFile);
     }
 
-    /**
-     * @throws \Symfony\Component\Yaml\Exception\ParseException
-     * @return array
-     */
-    public function readConfig()
+    public function readConfig(): array
     {
         try {
             return Yaml::parse(file_get_contents($this->configFile));

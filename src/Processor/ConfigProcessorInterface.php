@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Processor;
 
 /*
@@ -12,9 +13,5 @@ namespace Helhum\ConfigLoader\Processor;
 
 interface ConfigProcessorInterface
 {
-    /**
-     * @param array $config
-     * @return array
-     */
-    public function processConfig(array $config);
+    public function processConfig(array $config): array;
 }

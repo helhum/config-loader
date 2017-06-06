@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Reader;
 
 /*
@@ -22,26 +23,20 @@ class NestedConfigReader implements ConfigReaderInterface
      */
     private $configPath;
 
-    /**
-     * @param ConfigReaderInterface $configReader
-     * @param string $configPath
-     * @internal param string $directory
-     * @internal param string $fileExtension
-     */
-    public function __construct(ConfigReaderInterface $configReader, $configPath)
+    public function __construct(ConfigReaderInterface $configReader, string $configPath)
     {
         $this->configReader = $configReader;
         $this->configPath = $configPath;
     }
 
-    public function hasConfig()
+    public function hasConfig(): bool
     {
         return $this->configReader->hasConfig();
     }
 
-    public function readConfig()
+    public function readConfig(): array
     {
-        return $this->setValue(array(), $this->configPath, $this->configReader->readConfig());
+        return $this->setValue([], $this->configPath, $this->configReader->readConfig());
     }
 
     private function setValue(array $array, $configPath, $value)
@@ -61,7 +56,7 @@ class NestedConfigReader implements ConfigReaderInterface
             }
             // Create cell if it doesn't exist
             if (!array_key_exists($segment, $pointer)) {
-                $pointer[$segment] = array();
+                $pointer[$segment] = [];
             }
             // Set pointer to new cell
             $pointer = &$pointer[$segment];

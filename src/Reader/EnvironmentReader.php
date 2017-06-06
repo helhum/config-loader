@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader\Reader;
 
 /*
@@ -10,9 +11,6 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
-/**
- * Class EnvironmentReader
- */
 class EnvironmentReader implements ConfigReaderInterface
 {
     /**
@@ -25,33 +23,21 @@ class EnvironmentReader implements ConfigReaderInterface
      */
     private $keySeparator;
 
-    /**
-     * PhpFileReader constructor.
-     *
-     * @param string $prefix
-     * @param string $keySeparator
-     */
-    public function __construct($prefix, $keySeparator = '__')
+    public function __construct(string $prefix, string $keySeparator = '__')
     {
         $this->prefix = $prefix;
         $this->keySeparator = $keySeparator;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasConfig()
+    public function hasConfig(): bool
     {
         // Looping would be similarly expensive as reading
         return true;
     }
 
-    /**
-     * @return array
-     */
-    public function readConfig()
+    public function readConfig(): array
     {
-        $finalConfiguration = array();
+        $finalConfiguration = [];
         foreach ($_ENV as $name => $value) {
             if (!empty($this->prefix) && strpos($name, $this->prefix . $this->keySeparator) !== 0) {
                 continue;
@@ -114,7 +100,7 @@ class EnvironmentReader implements ConfigReaderInterface
             }
             // Create cell if it doesn't exist
             if (!array_key_exists($segment, $pointer)) {
-                $pointer[$segment] = array();
+                $pointer[$segment] = [];
             }
             // Set pointer to new cell
             $pointer = &$pointer[$segment];
