@@ -11,6 +11,8 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\ArrayFill;
+
 class NestedConfigReader implements ConfigReaderInterface
 {
     /**
@@ -36,33 +38,7 @@ class NestedConfigReader implements ConfigReaderInterface
 
     public function readConfig(): array
     {
-        return $this->setValue([], $this->configPath, $this->configReader->readConfig());
+        return ArrayFill::setValue([], $this->configPath, $this->configReader->readConfig());
     }
 
-    private function setValue(array $array, $configPath, $value)
-    {
-        if (!is_string($configPath) || $configPath === '') {
-            throw new \RuntimeException('Path must be not be empty string', 1496472912);
-        }
-        // Extract parts of the configPath
-        $configPath = str_getcsv($configPath, '.');
-        // Point to the root of the array
-        $pointer = &$array;
-        // Find configPath in given array
-        foreach ($configPath as $segment) {
-            // Fail if the part is empty
-            if ($segment === '') {
-                throw new \RuntimeException('Invalid path segment specified', 1496472917);
-            }
-            // Create cell if it doesn't exist
-            if (!array_key_exists($segment, $pointer)) {
-                $pointer[$segment] = [];
-            }
-            // Set pointer to new cell
-            $pointer = &$pointer[$segment];
-        }
-        // Set value of target cell
-        $pointer = $value;
-        return $array;
-    }
 }

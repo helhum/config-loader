@@ -11,6 +11,8 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\ArrayFill;
+
 class EnvironmentReader implements ConfigReaderInterface
 {
     /**
@@ -42,71 +44,12 @@ class EnvironmentReader implements ConfigReaderInterface
             if (!empty($this->prefix) && strpos($name, $this->prefix . $this->keySeparator) !== 0) {
                 continue;
             }
-            $finalConfiguration = self::setValueByPath(
+            $finalConfiguration = ArrayFill::setValue(
                 $finalConfiguration,
-                str_replace($this->keySeparator, '/', substr($name, strlen($this->prefix . $this->keySeparator))),
+                str_replace($this->keySeparator, '.', substr($name, strlen($this->prefix . $this->keySeparator))),
                 $value
             );
         }
         return $finalConfiguration;
-    }
-
-    /**
-     * Shameless copy of \TYPO3\CMS\Core\Utility\ArrayUtility,
-     * because requiring the whole typo3/cms package would be insane
-     *
-     * Modifies or sets a new value in an array by given path
-     *
-     * Example:
-     * - array:
-     * array(
-     *   'foo' => array(
-     *     'bar' => 42,
-     *   ),
-     * );
-     * - path: foo/bar
-     * - value: 23
-     * - return:
-     * array(
-     *   'foo' => array(
-     *     'bar' => 23,
-     *   ),
-     * );
-     *
-     * @param array $array Input array to manipulate
-     * @param string $path Path in array to search for
-     * @param mixed $value Value to set at path location in array
-     * @param string $delimiter Path delimiter
-     * @throws \RuntimeException
-     * @return array Modified array
-     */
-    public static function setValueByPath(array $array, $path, $value, $delimiter = '/')
-    {
-        if (empty($path)) {
-            throw new \RuntimeException('Path must not be empty. Please set a non empty $envPrefix!', 1462018404);
-        }
-        if (!is_string($path)) {
-            throw new \RuntimeException('Path must be a string', 1341406402);
-        }
-        // Extract parts of the path
-        $path = str_getcsv($path, $delimiter);
-        // Point to the root of the array
-        $pointer = &$array;
-        // Find path in given array
-        foreach ($path as $segment) {
-            // Fail if the part is empty
-            if (empty($segment)) {
-                throw new \RuntimeException('Invalid path segment specified', 1341406846);
-            }
-            // Create cell if it doesn't exist
-            if (!array_key_exists($segment, $pointer)) {
-                $pointer[$segment] = [];
-            }
-            // Set pointer to new cell
-            $pointer = &$pointer[$segment];
-        }
-        // Set value of target cell
-        $pointer = $value;
-        return $array;
     }
 }
