@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Helhum\ConfigLoader;
 
 /*
@@ -43,7 +44,7 @@ class ConfigurationLoader
      * @throws InvalidConfigurationFileException
      * @return array
      */
-    public function load()
+    public function load(): array
     {
         $finalConfig = [];
         foreach ($this->configReaders as $i => $reader) {
