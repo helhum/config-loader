@@ -11,7 +11,7 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
-use Helhum\ConfigLoader\ArrayFill;
+use Helhum\ConfigLoader\Config;
 
 class EnvironmentReader implements ConfigReaderInterface
 {
@@ -44,7 +44,7 @@ class EnvironmentReader implements ConfigReaderInterface
             if (!empty($this->prefix) && strpos($name, $this->prefix . $this->keySeparator) !== 0) {
                 continue;
             }
-            $finalConfiguration = ArrayFill::setValue(
+            $finalConfiguration = Config::setValue(
                 $finalConfiguration,
                 str_replace($this->keySeparator, '.', substr($name, strlen($this->prefix . $this->keySeparator))),
                 $value

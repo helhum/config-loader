@@ -11,7 +11,7 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
-use Helhum\ConfigLoader\ArrayFill;
+use Helhum\ConfigLoader\Config;
 
 class NestedConfigReader implements ConfigReaderInterface
 {
@@ -38,6 +38,6 @@ class NestedConfigReader implements ConfigReaderInterface
 
     public function readConfig(): array
     {
-        return ArrayFill::setValue([], $this->configPath, $this->configReader->readConfig());
+        return Config::setValue([], $this->configPath, $this->configReader->readConfig());
     }
 }

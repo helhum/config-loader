@@ -11,8 +11,28 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
-class ArrayFill
+class Config
 {
+    public static function getValue(array $config, string $configPath)
+    {
+        if (!is_string($configPath) || $configPath === '') {
+            throw new InvalidArgumentException('Path must be not be empty string', 1496758719);
+        }
+        $configPath = str_getcsv($configPath, '.');
+        // Loop through each part and extract its value
+        $value = $config;
+        foreach ($configPath as $segment) {
+            if (array_key_exists($segment, $value)) {
+                // Replace current value with child
+                $value = $value[$segment];
+            } else {
+                // Fail if key does not exist
+                throw new InvalidArgumentException('Path does not exist in array', 1496758722);
+            }
+        }
+        return $value;
+    }
+
     /**
      * Setting a value to an array in a given path
      *
