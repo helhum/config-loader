@@ -1,0 +1,2 @@
+imports:
+    - {resource: not_here.yml, ignore_errors: true}

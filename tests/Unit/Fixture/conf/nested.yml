@@ -1,0 +1,2 @@
+imports:
+    - {resource: 'glob.yml', path: nested}

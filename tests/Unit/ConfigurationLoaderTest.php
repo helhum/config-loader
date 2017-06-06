@@ -1,5 +1,5 @@
 <?php
-namespace Helhum\ConfigLoader\Tests;
+namespace Helhum\ConfigLoader\Tests\Unit;
 
 /*
  * This file is part of the helhum TYPO3 configuration loader package.

@@ -25,6 +25,8 @@ class RootConfigFileReader implements ConfigReaderInterface
      */
     private $resourceFile;
 
+    private static $currentlyImporting = [];
+
     public function __construct(string $resourceFile, string $type = null)
     {
         $this->resourceFile = $resourceFile;
@@ -54,14 +56,21 @@ class RootConfigFileReader implements ConfigReaderInterface
         if (!is_array($config['imports'])) {
             throw new InvalidArgumentException(sprintf('The "imports" key should contain an array in "%s"', $this->resourceFile), 1496583179);
         }
+        if (isset(self::$currentlyImporting[$this->resourceFile])) {
+            throw new InvalidArgumentException('Recursion while importing ' . $this->resourceFile, 1496783180);
+        }
+        self::$currentlyImporting[$this->resourceFile] = true;
         $importedConfig = [];
         foreach ($config['imports'] as $import) {
             if (!is_array($import)) {
                 throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resourceFile), 1496583180);
             }
             $reader = $this->createProcessingReader($import['resource'], $import['type'] ?? null);
-            $ignoreErrors = $import['type'] ?? false;
-            if (!$ignoreErrors && !$reader->hasConfig()) {
+            $ignoreErrors = $import['ignore_errors'] ?? false;
+            if (!$reader->hasConfig()) {
+                if ($ignoreErrors) {
+                    continue;
+                }
                 throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resourceFile), 1496585828);
             }
             if (!empty($import['path'])) {
@@ -69,7 +78,7 @@ class RootConfigFileReader implements ConfigReaderInterface
             }
             $importedConfig = array_replace_recursive($importedConfig, $reader->readConfig());
         }
-        unset($config['imports']);
+        unset($config['imports'], self::$currentlyImporting[$this->resourceFile]);
         return array_replace_recursive($config, $importedConfig);
     }
 
