@@ -2,6 +2,9 @@
     "name": "helhum/config-loader",
     "description" : "Generic config loader with context and environment support.",
     "license": "GPL-2.0+",
+    "require": {
+        "php": ">=7.0.0 <7.2.0"
+    },
     "require-dev": {
         "phpunit/phpunit": "~4.8.0",
         "mikey179/vfsStream": "~1.6.0"
