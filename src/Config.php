@@ -13,15 +13,25 @@ namespace Helhum\ConfigLoader;
 
 class Config
 {
+    /**
+     * Getting a value to an array in a given path
+     *
+     * Inspired by \TYPO3\CMS\Core\Utility\ArrayUtility
+     *
+     * @param array $config
+     * @param string $configPath Path separated by "."
+     * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @return mixed
+     */
     public static function getValue(array $config, string $configPath)
     {
         if (!is_string($configPath) || $configPath === '') {
             throw new InvalidArgumentException('Path must be not be empty string', 1496758719);
         }
-        $configPath = str_getcsv($configPath, '.');
+        $path = str_getcsv($configPath, '.');
         // Loop through each part and extract its value
         $value = $config;
-        foreach ($configPath as $segment) {
+        foreach ($path as $segment) {
             if (array_key_exists($segment, $value)) {
                 // Replace current value with child
                 $value = $value[$segment];
@@ -50,11 +60,11 @@ class Config
             throw new InvalidArgumentException('Path must be not be empty string', 1496472912);
         }
         // Extract parts of the configPath
-        $configPath = str_getcsv($configPath, '.');
+        $path = str_getcsv($configPath, '.');
         // Point to the root of the array
         $pointer = &$array;
         // Find configPath in given array
-        foreach ($configPath as $segment) {
+        foreach ($path as $segment) {
             // Fail if the part is empty
             if ($segment === '') {
                 throw new InvalidArgumentException('Invalid path segment specified', 1496472917);
@@ -69,5 +79,44 @@ class Config
         // Set value of target cell
         $pointer = $value;
         return $array;
+    }
+
+    /**
+     * Removing a path of an array
+     *
+     * Inspired by \TYPO3\CMS\Core\Utility\ArrayUtility
+     *
+     * @param array $config
+     * @param string $configPath Path separated by "."
+     * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @return array
+     */
+    public static function removeValue(array $config, string $configPath): array
+    {
+        if (!is_string($configPath) || $configPath === '') {
+            throw new InvalidArgumentException('Path must be not be empty string', 1496759385);
+        }
+        // Extract parts of the path
+        $path = str_getcsv($configPath, '.');
+        $pathDepth = count($path);
+        $currentDepth = 0;
+        $pointer = &$config;
+        // Find path in given array
+        foreach ($path as $segment) {
+            $currentDepth++;
+            // Fail if the part is empty
+            if ($segment === '') {
+                throw new InvalidArgumentException('Invalid path segment specified', 1496759389);
+            }
+            if (!array_key_exists($segment, $pointer)) {
+                throw new InvalidArgumentException('Path segment ' . $segment . ' does not exist in array', 1496759405);
+            }
+            if ($currentDepth === $pathDepth) {
+                unset($pointer[$segment]);
+            } else {
+                $pointer = &$pointer[$segment];
+            }
+        }
+        return $config;
     }
 }
