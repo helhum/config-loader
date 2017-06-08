@@ -25,12 +25,18 @@ class RootConfigFileReader implements ConfigReaderInterface
      */
     private $resourceFile;
 
+    /**
+     * @var bool
+     */
+    private $processImports;
+
     private static $currentlyImporting = [];
 
-    public function __construct(string $resourceFile, string $type = null)
+    public function __construct(string $resourceFile, string $type = null, bool $processImports = true)
     {
         $this->resourceFile = $resourceFile;
         $this->reader = $this->createReader($resourceFile, $type);
+        $this->processImports = $processImports;
     }
 
     public function hasConfig(): bool
@@ -40,7 +46,10 @@ class RootConfigFileReader implements ConfigReaderInterface
 
     public function readConfig(): array
     {
-        return $this->processImports($this->reader->readConfig());
+        if ($this->processImports) {
+            return $this->processImports($this->reader->readConfig());
+        }
+        return $this->reader->readConfig();
     }
 
     /**
