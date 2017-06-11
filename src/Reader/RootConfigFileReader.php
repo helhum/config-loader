@@ -88,7 +88,7 @@ class RootConfigFileReader implements ConfigReaderInterface
             $importedConfig = array_replace_recursive($importedConfig, $reader->readConfig());
         }
         unset($config['imports'], self::$currentlyImporting[$this->resourceFile]);
-        return array_replace_recursive($config, $importedConfig);
+        return array_replace_recursive($importedConfig, $config);
     }
 
     private function createProcessingReader(string $resource, string $type = null): ConfigReaderInterface

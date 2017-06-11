@@ -51,12 +51,12 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function importConfigFilesOverridesConfig()
+    public function importedConfigIsOverriddenByMainConfig()
     {
         $reader = new RootConfigFileReader(dirname(__DIR__) . '/Fixture/conf/import.yml');
         $result = $reader->readConfig();
-        $this->assertSame('production', $result['key']);
-        $this->assertSame('override', $result['override_key']);
+        $this->assertSame('import', $result['key']);
+        $this->assertSame('import', $result['override_key']);
     }
 
     /**
