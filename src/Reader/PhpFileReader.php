@@ -11,6 +11,8 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
+
 class PhpFileReader implements ConfigReaderInterface
 {
     /**
@@ -30,6 +32,10 @@ class PhpFileReader implements ConfigReaderInterface
 
     public function readConfig(): array
     {
-        return include $this->configFile;
+        $config = include $this->configFile;
+        if (!is_array($config)) {
+            throw new InvalidConfigurationFileException(sprintf('Configuration file "%s" is invalid. It must return an array, but returned "%s"', $this->configFile, gettype($config)), 1497449979);
+        }
+        return $config;
     }
 }

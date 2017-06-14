@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -34,9 +35,13 @@ class YamlFileReader implements ConfigReaderInterface
     public function readConfig(): array
     {
         try {
-            return Yaml::parse(file_get_contents($this->configFile));
+            $config = Yaml::parse(file_get_contents($this->configFile));
         } catch (ParseException $e) {
-            throw new ParseException(sprintf('Error while parsing file "%s", Message: "%s"', $this->configFile, $e->getMessage()), 1496471748, $e);
+            throw new InvalidConfigurationFileException(sprintf('Error while parsing file "%s", Message: "%s"', $this->configFile, $e->getMessage()), 1496471748, $e);
         }
+        if (!is_array($config)) {
+            throw new InvalidConfigurationFileException(sprintf('Configuration file "%s" is invalid. It must return an array, but returned "%s"', $this->configFile, gettype($config)), 1497450127);
+        }
+        return $config;
     }
 }
