@@ -67,7 +67,7 @@ class CachedConfigurationLoader
 
     protected function hasCache(): bool
     {
-        return @file_exists($this->cacheFileName);
+        return file_exists($this->cacheFileName);
     }
 
     private function loadCache(): array
