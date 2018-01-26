@@ -18,26 +18,26 @@ class NestedConfigReader implements ConfigReaderInterface
     /**
      * @var ConfigReaderInterface
      */
-    private $configReader;
+    private $reader;
 
     /**
      * @var string
      */
     private $configPath;
 
-    public function __construct(ConfigReaderInterface $configReader, string $configPath)
+    public function __construct(ConfigReaderInterface $reader, string $configPath)
     {
-        $this->configReader = $configReader;
+        $this->reader = $reader;
         $this->configPath = $configPath;
     }
 
     public function hasConfig(): bool
     {
-        return $this->configReader->hasConfig();
+        return $this->reader->hasConfig();
     }
 
     public function readConfig(): array
     {
-        return Config::setValue([], $this->configPath, $this->configReader->readConfig());
+        return Config::setValue([], $this->configPath, $this->reader->readConfig());
     }
 }

@@ -56,9 +56,9 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
                 42,
                 [
                     'foo' => [
-                        'bar' => 42
-                    ]
-                ]
+                        'bar' => 42,
+                    ],
+                ],
             ],
             'does not replace if wrong syntax' => [
                 '%env()%',
@@ -70,8 +70,10 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @dataProvider placeholderDataProvider
+     * @param mixed $expectedValue
+     * @param array $config
      */
-    public function correctlyReplacesPlaceholders(string $placeHolder, $expectedValue, $config = [])
+    public function correctlyReplacesPlaceholders(string $placeHolder, $expectedValue, array $config = [])
     {
         $config['placeholder'] = $placeHolder;
         $subject = new PlaceholderValue();

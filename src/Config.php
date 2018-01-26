@@ -25,7 +25,7 @@ class Config
      */
     public static function getValue(array $config, string $configPath)
     {
-        if (!is_string($configPath) || $configPath === '') {
+        if ($configPath === '') {
             throw new InvalidArgumentException('Path must be not be empty string', 1496758719);
         }
         $path = str_getcsv($configPath, '.');
