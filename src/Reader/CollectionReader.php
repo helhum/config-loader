@@ -23,7 +23,7 @@ class CollectionReader implements ConfigReaderInterface
     /**
      * @param ConfigReaderInterface[] $readers
      */
-    public function __construct(array $readers)
+    public function __construct(ConfigReaderInterface ...$readers)
     {
         $this->readers = $readers;
     }
