@@ -11,7 +11,6 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
-use Helhum\ConfigLoader\Config;
 use Helhum\ConfigLoader\ConfigurationReaderFactory;
 use Helhum\ConfigLoader\InvalidArgumentException;
 

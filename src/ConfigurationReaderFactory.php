@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\Reader\ClosureConfigReader;
 use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 use Helhum\ConfigLoader\Reader\EnvironmentReader;
 use Helhum\ConfigLoader\Reader\GlobFileReader;
@@ -48,31 +49,12 @@ class ConfigurationReaderFactory
 
     public function createReader(string $resource, array $options = []): ConfigReaderInterface
     {
-        $reader = $this->createReaderFromConfig($resource, $options);
-        if (!empty($options['path'])) {
-            $reader = new NestedConfigReader($reader, $options['path']);
-        }
-        return $reader;
+        return $this->createDecoratedReader($resource, $options);
     }
 
     public function createRootReader(string $resource, array $options = []): ConfigReaderInterface
     {
-        $configPath = '';
-        if (!empty($options['path'])) {
-            $configPath = $options['path'];
-            unset($options['path']);
-        }
-
-        $reader = $this->createReaderFromConfig($resource, $options, 'rootReader');
-
-        if (!empty($configPath)) {
-            $reader = new NestedConfigReader(
-                $reader,
-                $configPath
-            );
-        }
-
-        return $reader;
+        return $this->createDecoratedReader($resource, $options, 'rootReader');
     }
 
     public function withResourceBasePath(string $resourceBasePath): self
@@ -82,6 +64,36 @@ class ConfigurationReaderFactory
             $newFactory->setReaderFactoryForType($type, $readerFactory);
         }
         return $newFactory;
+    }
+
+    private function createDecoratedReader(string $resource, array $options = [], string $typeOverride = null): ConfigReaderInterface
+    {
+        $readerOptions = array_diff_key($options, ['path' => true, 'exclude' => true]);
+        $reader = $this->createReaderFromConfig($resource, $readerOptions, $typeOverride);
+
+        if (!empty($options['path'])) {
+            $reader = new NestedConfigReader($reader, $options['path']);
+        }
+
+        if (isset($options['exclude'])) {
+            if (!is_array($options['exclude'])) {
+                throw new InvalidArgumentException('Excluded array paths must be an array', 1510608229);
+            }
+            $reader = new ClosureConfigReader(
+                function () use ($options, $reader) {
+                    $config = $reader->readConfig();
+                    foreach ($options['exclude'] as $overridePath) {
+                        $config = Config::removeValue($config, $overridePath);
+                    }
+                    return $config;
+                },
+                function () use ($reader) {
+                    return $reader->hasConfig();
+                }
+            );
+        }
+
+        return $reader;
     }
 
     private function createReaderFromConfig(string $resource, array $options = [], string $typeOverride = null): ConfigReaderInterface

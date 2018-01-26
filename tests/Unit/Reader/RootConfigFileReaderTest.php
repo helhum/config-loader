@@ -137,4 +137,16 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('bar', $reader->readConfig()['nested']['foo']);
         $this->assertSame('foobar', $reader->readConfig()['nested']['baz']);
     }
+
+    /**
+     * @test
+     */
+    public function canOverridePathsFromImportedConfig()
+    {
+        $reader = new RootConfigFileReader(dirname(__DIR__) . '/Fixture/conf/import.yml');
+        $this->assertSame(
+            ['bar' => 'baz'],
+            $reader->readConfig()['nested']['foo']
+        );
+    }
 }

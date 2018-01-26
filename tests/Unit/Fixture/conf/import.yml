@@ -1,7 +1,11 @@
 imports:
-    - {resource: production.yml}
+    - {resource: production.yml, exclude: [nested.foo]}
     - {resource: override.php}
 
 key: import
 production_key: import
 override_key: import
+
+nested:
+    foo:
+        bar: baz

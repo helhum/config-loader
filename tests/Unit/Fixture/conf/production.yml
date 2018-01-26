@@ -1,3 +1,7 @@
 key: production
 production_key: production
 override_key: production
+
+nested:
+    foo:
+        bla: blupp
