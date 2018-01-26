@@ -39,7 +39,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canReadEnvironment()
     {
-        $reader = new RootConfigFileReader('FOO', 'env');
+        $reader = new RootConfigFileReader('FOO', ['type' => 'env']);
         $_ENV['FOO__key'] = 'production';
         try {
             $this->assertSame('production', $reader->readConfig()['key']);

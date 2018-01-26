@@ -11,32 +11,34 @@ namespace Helhum\ConfigLoader\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\Config;
+use Helhum\ConfigLoader\ConfigurationReaderFactory;
 use Helhum\ConfigLoader\InvalidArgumentException;
 
 class RootConfigFileReader implements ConfigReaderInterface
 {
-    /**
-     * @var ConfigReaderInterface
-     */
-    private $reader;
-
     /**
      * @var string
      */
     private $resourceFile;
 
     /**
-     * @var bool
+     * @var ConfigurationReaderFactory
      */
-    private $processImports;
+    private $factory;
+
+    /**
+     * @var ConfigReaderInterface
+     */
+    private $reader;
 
     private static $currentlyImporting = [];
 
-    public function __construct(string $resourceFile, string $type = null, bool $processImports = true)
+    public function __construct(string $resourceFile, array $options = [], ConfigurationReaderFactory $factory = null)
     {
         $this->resourceFile = $resourceFile;
-        $this->reader = $this->createReader($resourceFile, $type);
-        $this->processImports = $processImports;
+        $this->factory = $factory ?: new ConfigurationReaderFactory();
+        $this->reader = $this->factory->createReader($resourceFile, $options);
     }
 
     public function hasConfig(): bool
@@ -46,10 +48,7 @@ class RootConfigFileReader implements ConfigReaderInterface
 
     public function readConfig(): array
     {
-        if ($this->processImports) {
-            return $this->processImports($this->reader->readConfig());
-        }
-        return $this->reader->readConfig();
+        return $this->processImports($this->reader->readConfig());
     }
 
     /**
@@ -70,11 +69,12 @@ class RootConfigFileReader implements ConfigReaderInterface
         }
         self::$currentlyImporting[$this->resourceFile] = true;
         $importedConfig = [];
+        $importReaderFactory = $this->factory->withResourceBasePath(dirname($this->resourceFile));
         foreach ($config['imports'] as $import) {
             if (!is_array($import)) {
                 throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resourceFile), 1496583180);
             }
-            $reader = $this->createProcessingReader($import['resource'], $import['type'] ?? null);
+            $reader = $importReaderFactory->createRootReader($import['resource'], $import);
             $ignoreErrors = $import['ignore_errors'] ?? false;
             if (!$reader->hasConfig()) {
                 if ($ignoreErrors) {
@@ -82,64 +82,9 @@ class RootConfigFileReader implements ConfigReaderInterface
                 }
                 throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resourceFile), 1496585828);
             }
-            if (!empty($import['path'])) {
-                $reader = new NestedConfigReader($reader, $import['path']);
-            }
             $importedConfig = array_replace_recursive($importedConfig, $reader->readConfig());
         }
         unset($config['imports'], self::$currentlyImporting[$this->resourceFile]);
         return array_replace_recursive($importedConfig, $config);
-    }
-
-    private function createProcessingReader(string $resource, string $type = null): ConfigReaderInterface
-    {
-        if ($type !== 'env') {
-            $resource = $this->makeAbsolute($resource);
-        }
-        return new self($resource, $type);
-    }
-
-    private function createReader(string $resource, string $type = null): ConfigReaderInterface
-    {
-        $type = $type ?: pathinfo($resource, PATHINFO_EXTENSION);
-        switch ($type) {
-            case 'yml':
-            case 'yaml':
-                return new YamlFileReader($resource);
-            case 'env':
-                return new EnvironmentReader($resource);
-            case 'glob':
-                return new CollectionReader($this->createReaderCollection($resource));
-            default:
-                return new PhpFileReader($resource);
-        }
-    }
-
-    /**
-     * @param string $resource
-     * @param string|null $type
-     * @return ConfigReaderInterface[]
-     */
-    private function createReaderCollection(string $resource, string $type = null): array
-    {
-        $readers = [];
-        $configFiles = glob($resource);
-        foreach ($configFiles as $settingsFile) {
-            $readers[] = $this->createProcessingReader($settingsFile, $type);
-        }
-        return $readers;
-    }
-
-    private function makeAbsolute(string $path): string
-    {
-        if ($this->isAbsolutePath($path)) {
-            return $path;
-        }
-        return dirname($this->resourceFile) . '/' . $path;
-    }
-
-    private function isAbsolutePath(string $path): bool
-    {
-        return $path[0] === '/' || $path[1] === ':';
     }
 }
