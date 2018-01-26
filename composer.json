@@ -3,7 +3,7 @@
     "description" : "Generic config loader with context and environment support.",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=7.0.0 <7.2.0"
+        "php": ">=7.0.0 <7.3.0"
     },
     "require-dev": {
         "symfony/yaml": "^2.8 || ^3.3",
