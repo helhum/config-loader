@@ -1,0 +1,5 @@
+meta:
+  description: This file fails the standard yaml parsing
+  failing:
+    string: %someFunctionCall()%
+    explanation: 'The % character is an unknown character for the pecl YAML parser. If you want to use it, you should wrap it in quotes.'
