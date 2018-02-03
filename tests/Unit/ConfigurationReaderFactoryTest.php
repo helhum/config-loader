@@ -60,7 +60,8 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
                         return ['foo' => 'bar'];
                     }
                 );
-            }
+            },
+            false
         );
 
         $reader = $factory->createReader('foo', ['type' => 'test', 'path' => 'baz']);
@@ -82,7 +83,8 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
                         return ['foo' => 'bar'];
                     }
                 );
-            }
+            },
+            false
         );
 
         $reader = $factory->createRootReader('foo', ['type' => 'test', 'path' => 'baz']);
@@ -104,7 +106,8 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
                         return ['foo' => 'bar'];
                     }
                 );
-            }
+            },
+            false
         );
 
         $reader = $factory->createReader('foo', ['type' => 'test']);
@@ -124,7 +127,8 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
                 function () {
                     return ['foo' => 'bar'];
                 }
-            )
+            ),
+            false
         );
 
         $reader = $factory->createReader('foo', ['type' => 'test']);
@@ -146,64 +150,14 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
                         return ['foo' => 'bar'];
                     }
                 );
-            }
+            },
+            false
         );
-        $factory->setReaderFactoryForType('test2', 'test');
+        $factory->setReaderFactoryForType('test2', 'test', false);
 
         $reader = $factory->createReader('foo', ['type' => 'test2']);
         $this->assertInstanceOf(ConfigReaderInterface::class, $reader);
         $this->assertSame(['foo' => 'bar'], $reader->readConfig());
-    }
-
-    /**
-     * @test
-     */
-    public function resourceBasePathIsExposedInOptions()
-    {
-        $factory = new ConfigurationReaderFactory('/parent/path/');
-        $factory->setReaderFactoryForType(
-            'test',
-            function ($resource, $options) {
-                return new ClosureConfigReader(
-                    function () use ($options) {
-                        return $options;
-                    }
-                );
-            }
-        );
-
-        $reader = $factory->createReader('foo', ['type' => 'test']);
-        $this->assertInstanceOf(ConfigReaderInterface::class, $reader);
-        $result = $reader->readConfig();
-        $this->assertArrayHasKey('resourceBasePath', $result);
-        $this->assertSame('/parent/path/', $result['resourceBasePath']);
-    }
-
-    /**
-     * @test
-     */
-    public function withResourceBasePathCreatesNewFactoryWithNewBasePath()
-    {
-        $factory = new ConfigurationReaderFactory();
-        $factory->setReaderFactoryForType(
-            'test',
-            function ($resource, $options) {
-                return new ClosureConfigReader(
-                    function () use ($options) {
-                        return $options;
-                    }
-                );
-            }
-        );
-
-        $newFactory = $factory->withResourceBasePath('/parent/path/');
-        $this->assertNotSame($newFactory, $factory);
-
-        $reader = $newFactory->createReader('foo', ['type' => 'test']);
-        $this->assertInstanceOf(ConfigReaderInterface::class, $reader);
-        $result = $reader->readConfig();
-        $this->assertArrayHasKey('resourceBasePath', $result);
-        $this->assertSame('/parent/path/', $result['resourceBasePath']);
     }
 
     /**
@@ -234,7 +188,7 @@ class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
     public function createThrowsIfReaderFactoryIsOfWrongTypeFoundForResource()
     {
         $factory = new ConfigurationReaderFactory();
-        $factory->setReaderFactoryForType('test', ['not callable']);
+        $factory->setReaderFactoryForType('test', ['not callable'], false);
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionCode(1516838223);
         $factory->createReader('import.test');

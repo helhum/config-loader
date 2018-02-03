@@ -19,7 +19,7 @@ class RootConfigFileReader implements ConfigReaderInterface
     /**
      * @var string
      */
-    private $resourceFile;
+    private $resource;
 
     /**
      * @var ConfigurationReaderFactory
@@ -33,11 +33,14 @@ class RootConfigFileReader implements ConfigReaderInterface
 
     private static $currentlyImporting = [];
 
-    public function __construct(string $resourceFile, array $options = [], ConfigurationReaderFactory $factory = null)
+    public function __construct(string $resource, array $options = [], ConfigurationReaderFactory $factory = null)
     {
-        $this->resourceFile = $resourceFile;
+        $this->resource = $resource;
         $this->factory = $factory ?: new ConfigurationReaderFactory();
-        $this->reader = $this->factory->createReader($resourceFile, $options);
+        if ($this->factory->isFileResource($resource, $options)) {
+            $this->factory = new ConfigurationReaderFactory(dirname($resource));
+        }
+        $this->reader = $this->factory->createReader($resource, $options);
     }
 
     public function hasConfig(): bool
@@ -61,29 +64,28 @@ class RootConfigFileReader implements ConfigReaderInterface
             return $config;
         }
         if (!is_array($config['imports'])) {
-            throw new InvalidArgumentException(sprintf('The "imports" key should contain an array in "%s"', $this->resourceFile), 1496583179);
+            throw new InvalidArgumentException(sprintf('The "imports" key should contain an array in "%s"', $this->resource), 1496583179);
         }
-        if (isset(self::$currentlyImporting[$this->resourceFile])) {
-            throw new InvalidArgumentException('Recursion while importing ' . $this->resourceFile, 1496783180);
+        if (isset(self::$currentlyImporting[$this->resource])) {
+            throw new InvalidArgumentException('Recursion while importing ' . $this->resource, 1496783180);
         }
-        self::$currentlyImporting[$this->resourceFile] = true;
+        self::$currentlyImporting[$this->resource] = true;
         $importedConfig = [];
-        $importReaderFactory = $this->factory->withResourceBasePath(dirname($this->resourceFile));
         foreach ($config['imports'] as $import) {
             if (!is_array($import)) {
-                throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resourceFile), 1496583180);
+                throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resource), 1496583180);
             }
-            $reader = $importReaderFactory->createRootReader($import['resource'], $import);
+            $reader = $this->factory->createRootReader($import['resource'], $import);
             $ignoreErrors = $import['ignore_errors'] ?? false;
             if (!$reader->hasConfig()) {
                 if ($ignoreErrors) {
                     continue;
                 }
-                throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resourceFile), 1496585828);
+                throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resource), 1496585828);
             }
             $importedConfig = array_replace_recursive($importedConfig, $reader->readConfig());
         }
-        unset($config['imports'], self::$currentlyImporting[$this->resourceFile]);
+        unset($config['imports'], self::$currentlyImporting[$this->resource]);
         return array_replace_recursive($importedConfig, $config);
     }
 }

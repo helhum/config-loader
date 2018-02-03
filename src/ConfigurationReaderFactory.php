@@ -37,14 +37,60 @@ class ConfigurationReaderFactory
         $this->registerDefaultReaderTypes();
     }
 
-    /**
-     * @param mixed $readerFactory
-     * @param string $type
-     */
-    public function setReaderFactoryForType(string $type, $readerFactory)
+    private function registerDefaultReaderTypes()
     {
-        $this->addedReaderTypes[$type] = $readerFactory;
-        $this->readerTypes[$type] = $readerFactory;
+        $this->readerTypes = [
+            'env' => [
+                'factory' => function (string $resource) {
+                    return new EnvironmentReader($resource);
+                },
+                'isFileResource' => false,
+            ],
+            'glob' => [
+                'factory' => function (string $resource) {
+                    return new GlobFileReader($resource, $this);
+                },
+                'isFileResource' => true,
+            ],
+            'php' => [
+                'factory' => function (string $resource) {
+                    return new PhpFileReader($resource);
+                },
+                'isFileResource' => true,
+            ],
+            'rootReader' => [
+                'factory' => function (string $resource, array $options) {
+                    $factory = $this;
+                    if ($this->isFileResource($resource, $options)) {
+                        $factory = $this->withResourceBasePath(dirname($resource));
+                    }
+                    return new RootConfigFileReader($resource, $options, $factory);
+                },
+                'isFileResource' => false,
+            ],
+            'yaml' => [
+                'factory' => function (string $resource) {
+                    return new YamlFileReader($resource);
+                },
+                'isFileResource' => true,
+            ],
+            'yml' => [
+                'factory' => 'yaml',
+            ],
+        ];
+    }
+
+    /**
+     * @param string $type
+     * @param mixed $readerFactory
+     * @param bool $isFileResource
+     */
+    public function setReaderFactoryForType(string $type, $readerFactory, bool $isFileResource)
+    {
+        $this->addedReaderTypes[$type]['factory'] = $readerFactory;
+        $this->addedReaderTypes[$type]['isFileResource'] = $isFileResource;
+        $this->readerTypes[$type]['factory'] = $readerFactory;
+        $this->readerTypes[$type]['isFileResource'] = $isFileResource;
     }
 
     public function createReader(string $resource, array $options = []): ConfigReaderInterface
@@ -57,11 +103,16 @@ class ConfigurationReaderFactory
         return $this->createDecoratedReader($resource, $options, 'rootReader');
     }
 
-    public function withResourceBasePath(string $resourceBasePath): self
+    public function isFileResource(string $resource, array $options)
+    {
+        return $this->readerTypes[$this->resolveType($resource, $options)]['isFileResource'];
+    }
+
+    private function withResourceBasePath(string $resourceBasePath): self
     {
         $newFactory = new self($resourceBasePath);
-        foreach ($this->addedReaderTypes as $type => $readerFactory) {
-            $newFactory->setReaderFactoryForType($type, $readerFactory);
+        foreach ($this->addedReaderTypes as $type => $readerFactoryOptions) {
+            $newFactory->setReaderFactoryForType($type, $readerFactoryOptions['factory'], $readerFactoryOptions['isFileResource']);
         }
         return $newFactory;
     }
@@ -98,8 +149,18 @@ class ConfigurationReaderFactory
 
     private function createReaderFromConfig(string $resource, array $options = [], string $typeOverride = null): ConfigReaderInterface
     {
-        // Expose parent resource path to third party factory closure within options
-        $options['resourceBasePath'] = $this->resourceBasePath;
+        $type = $this->resolveType($resource, $options, $typeOverride);
+        if ($this->readerTypes[$type]['factory'] instanceof ConfigReaderInterface) {
+            return $this->readerTypes[$type]['factory'];
+        }
+        if (is_callable($this->readerTypes[$type]['factory'])) {
+            return call_user_func($this->readerTypes[$type]['factory'], $this->makeAbsolute($resource, $options), $options);
+        }
+        throw new InvalidArgumentException(sprintf('Invalid reader provided for type "%s". Must be callable or ConfigReaderInterface', $resource), 1516838223);
+    }
+
+    private function resolveType(string $resource, array $options, string $typeOverride = null)
+    {
         $type = $options['type'] ?? pathinfo($resource, PATHINFO_EXTENSION);
         if ($typeOverride !== null) {
             $type = $typeOverride;
@@ -107,54 +168,26 @@ class ConfigurationReaderFactory
         if (!isset($this->readerTypes[$type])) {
             throw new InvalidArgumentException(sprintf('Cannot create reader for resource "%s". Unkown type "%s"', $resource, $type), 1516837804);
         }
-        if (is_string($this->readerTypes[$type])) {
-            $options['type'] = $this->readerTypes[$type];
-            return $this->createReaderFromConfig($resource, $options);
+        if (is_string($this->readerTypes[$type]['factory'])) {
+            $options['type'] = $this->readerTypes[$type]['factory'];
+            return $this->resolveType($resource, $options);
         }
-        if ($this->readerTypes[$type] instanceof ConfigReaderInterface) {
-            return $this->readerTypes[$type];
-        }
-        if (is_callable($this->readerTypes[$type])) {
-            return call_user_func($this->readerTypes[$type], $resource, $options);
-        }
-        throw new InvalidArgumentException(sprintf('Invalid reader provided for type "%s". Must be callable or ConfigReaderInterface', $resource), 1516838223);
+        return $type;
     }
 
-    private function registerDefaultReaderTypes()
+    private function makeAbsolute(string $resource, array $options): string
     {
-        $this->readerTypes = [
-            'env' => function ($resource) {
-                return new EnvironmentReader($resource);
-            },
-            'glob' => function ($resource, array $options) {
-                return new GlobFileReader($this->makeAbsolute($resource), $this->withResourceBasePath($options['resourceBasePath']));
-            },
-            'php' => function ($resource) {
-                return new PhpFileReader($this->makeAbsolute($resource));
-            },
-            'rootReader' => function ($resource, array $options) {
-                return new RootConfigFileReader($this->makeAbsolute($resource), $options, $this);
-            },
-            'yaml' => function ($resource) {
-                return new YamlFileReader($this->makeAbsolute($resource));
-            },
-            'yml' => 'yaml',
-        ];
-    }
-
-    private function makeAbsolute(string $path): string
-    {
-        if ($this->isAbsolutePath($path)) {
-            return $path;
+        if (!$this->isFileResource($resource, $options) || $this->hasAbsolutePath($resource)) {
+            return $resource;
         }
         if ($this->resourceBasePath === null) {
-            throw new InvalidArgumentException(sprintf('Could not find resource "%s"', $path), 1516823055);
+            throw new InvalidArgumentException(sprintf('Could not find resource "%s"', $resource), 1516823055);
         }
-        return $this->resourceBasePath . '/' . $path;
+        return $this->resourceBasePath . '/' . $resource;
     }
 
-    private function isAbsolutePath(string $path): bool
+    private function hasAbsolutePath(string $resource): bool
     {
-        return $path[0] === '/' || $path[1] === ':';
+        return $resource[0] === '/' || $resource[1] === ':';
     }
 }

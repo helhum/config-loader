@@ -1,2 +1,2 @@
 imports:
-    - {resource: 'glob.*.yml', type: glob}
+    - {resource: 'glob/glob.*.yml', type: glob}
