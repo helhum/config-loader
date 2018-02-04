@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader\Tests\Reader;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\ConfigurationReaderFactory;
 use Helhum\ConfigLoader\InvalidArgumentException;
 use Helhum\ConfigLoader\Reader\RootConfigFileReader;
 
@@ -29,7 +30,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canReadPhpFile()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/production.php');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/production.php', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $this->assertSame('production', $reader->readConfig()['key']);
     }
 
@@ -38,7 +39,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canReadYamlFile()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/production.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/production.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $this->assertSame('production', $reader->readConfig()['key']);
     }
 
@@ -47,7 +48,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canReadEnvironment()
     {
-        $reader = new RootConfigFileReader('FOO', ['type' => 'env']);
+        $reader = new RootConfigFileReader('FOO', ['type' => 'env'], new ConfigurationReaderFactory($this->resourceBaseBath));
         $_ENV['FOO__key'] = 'production';
         try {
             $this->assertSame('production', $reader->readConfig()['key']);
@@ -61,7 +62,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function importedConfigIsOverriddenByMainConfig()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/import.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/import.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $result = $reader->readConfig();
         $this->assertSame('import', $result['key']);
         $this->assertSame('import', $result['override_key']);
@@ -73,7 +74,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     public function importRecursionCausesException()
     {
         $this->expectException(InvalidArgumentException::class);
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/recursion1.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/recursion1.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $reader->readConfig();
     }
 
@@ -83,7 +84,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     public function nestedImportRecursionCausesException()
     {
         $this->expectException(InvalidArgumentException::class);
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/recursion3.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/recursion3.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $reader->readConfig();
     }
 
@@ -93,7 +94,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     public function brokenImportCausesException()
     {
         $this->expectException(InvalidArgumentException::class);
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $reader->readConfig();
     }
 
@@ -103,7 +104,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     public function brokenImportResourceCausesException()
     {
         $this->expectException(InvalidArgumentException::class);
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $reader->readConfig();
     }
 
@@ -113,7 +114,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     public function notAvailableImportResourceCausesExceptionByDefault()
     {
         $this->expectException(InvalidArgumentException::class);
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/broken_import1.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $reader->readConfig();
     }
 
@@ -122,7 +123,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function notAvailableImportResourceIsIgnoredWhenConfigured()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/graceful_import.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/graceful_import.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $this->assertSame([], $reader->readConfig());
     }
 
@@ -131,7 +132,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function importGlobImportsAllFiles()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/glob.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/glob.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $this->assertSame('bar', $reader->readConfig()['foo']);
         $this->assertSame('foobar', $reader->readConfig()['baz']);
     }
@@ -141,7 +142,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canImportNestedStructure()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/nested.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/nested.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $_ENV['FOO__key'] = 'production';
         try {
             $config = $reader->readConfig();
@@ -157,7 +158,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canImportComplexStructures()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/complex/root.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/complex/root.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath . '/complex'));
         $_ENV['FOO__key'] = 'production';
         try {
             $config = $reader->readConfig();
@@ -174,7 +175,7 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
      */
     public function canOverridePathsFromImportedConfig()
     {
-        $reader = new RootConfigFileReader($this->resourceBaseBath . '/import.yml');
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/import.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
         $this->assertSame(
             ['bar' => 'baz'],
             $reader->readConfig()['nested']['foo']

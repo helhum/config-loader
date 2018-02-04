@@ -33,13 +33,10 @@ class RootConfigFileReader implements ConfigReaderInterface
 
     private static $currentlyImporting = [];
 
-    public function __construct(string $resource, array $options = [], ConfigurationReaderFactory $factory = null)
+    public function __construct(string $resource, array $options, ConfigurationReaderFactory $factory)
     {
         $this->resource = $resource;
-        $this->factory = $factory ?: new ConfigurationReaderFactory();
-        if ($this->factory->isFileResource($resource, $options)) {
-            $this->factory = new ConfigurationReaderFactory(dirname($resource));
-        }
+        $this->factory = $factory;
         $this->reader = $this->factory->createReader($resource, $options);
     }
 
