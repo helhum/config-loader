@@ -16,6 +16,7 @@ use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 use Helhum\ConfigLoader\Reader\EnvironmentReader;
 use Helhum\ConfigLoader\Reader\GlobFileReader;
 use Helhum\ConfigLoader\Reader\NestedConfigReader;
+use Helhum\ConfigLoader\Reader\PeclYamlFileReader;
 use Helhum\ConfigLoader\Reader\PhpFileReader;
 use Helhum\ConfigLoader\Reader\RootConfigFileReader;
 use Helhum\ConfigLoader\Reader\YamlFileReader;
@@ -70,6 +71,9 @@ class ConfigurationReaderFactory
             ],
             'yaml' => [
                 'factory' => function (string $resource) {
+                    if (extension_loaded('yaml')) {
+                        return new PeclYamlFileReader($resource);
+                    }
                     return new YamlFileReader($resource);
                 },
                 'isFileResource' => true,

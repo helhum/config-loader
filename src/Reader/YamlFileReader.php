@@ -15,6 +15,9 @@ use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Yaml file reader based on Symfony Yaml parser
+ */
 class YamlFileReader implements ConfigReaderInterface
 {
     /**

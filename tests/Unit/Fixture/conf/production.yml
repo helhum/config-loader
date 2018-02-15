@@ -5,3 +5,4 @@ override_key: production
 nested:
     foo:
         bla: blupp
+        str: '%bar(baz)%'
