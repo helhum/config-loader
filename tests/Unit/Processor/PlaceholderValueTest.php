@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader\Tests\Unit\Processor;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\Processor\PlaceholderValue;
 
 class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
@@ -60,6 +61,15 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
                     ],
                 ],
             ],
+            'Recursively replaces conf value' => [
+                '%conf(foo.bar)%',
+                'bar',
+                [
+                    'foo' => [
+                        'bar' => '%env(foo)%',
+                    ],
+                ],
+            ],
             'does not replace if wrong syntax' => [
                 '%env()%',
                 '%env()%',
@@ -70,6 +80,7 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @dataProvider placeholderDataProvider
+     * @param string $placeHolder
      * @param mixed $expectedValue
      * @param array $config
      */
@@ -79,5 +90,33 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         $subject = new PlaceholderValue();
         $result = $subject->processConfig($config);
         $this->assertSame($expectedValue, $result['placeholder']);
+    }
+
+    public function invalidConfigThrowsExceptionDataProvider()
+    {
+        return [
+            'Recursion throws exception' => [
+                1519593176,
+                [
+                    'foo' => [
+                        'bar' => '%conf(foo)%',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidConfigThrowsExceptionDataProvider
+     * @param int|null $expectedExceptionCode
+     * @param array $config
+     */
+    public function invalidConfigThrowsException(int $expectedExceptionCode, array $config)
+    {
+        $subject = new PlaceholderValue();
+        $this->expectException(InvalidConfigurationFileException::class);
+        $this->expectExceptionCode($expectedExceptionCode);
+        $subject->processConfig($config);
     }
 }

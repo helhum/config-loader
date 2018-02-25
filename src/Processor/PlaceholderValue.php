@@ -12,6 +12,7 @@ namespace Helhum\ConfigLoader\Processor;
  */
 
 use Helhum\ConfigLoader\Config;
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
 
 class PlaceholderValue implements ConfigProcessorInterface
 {
@@ -21,6 +22,11 @@ class PlaceholderValue implements ConfigProcessorInterface
      * @var array
      */
     private $referenceConfig;
+
+    /**
+     * @var array
+     */
+    private $currentlyReplacingConfPaths = [];
 
     /**
      * @param array $config
@@ -63,7 +69,18 @@ class PlaceholderValue implements ConfigProcessorInterface
                 $replacedValue = constant($matches[2]);
                 break;
             case 'conf':
-                $replacedValue = Config::getValue($this->referenceConfig, $matches[2]);
+                $configPath = $matches[2];
+                if (isset($this->currentlyReplacingConfPaths[$configPath])) {
+                    throw new InvalidConfigurationFileException(sprintf('Recursion detected for config path "%s"', $configPath), 1519593176);
+                }
+                $this->currentlyReplacingConfPaths[$configPath] = true;
+                $replacedValue = Config::getValue($this->referenceConfig, $configPath);
+                if (is_array($replacedValue)) {
+                    $replacedValue = $this->processConfig($replacedValue);
+                } elseif ($this->isPlaceHolder($replacedValue)) {
+                    $replacedValue = $this->replacePlaceHolder($replacedValue);
+                }
+                unset($this->currentlyReplacingConfPaths[$configPath]);
                 break;
             case 'global':
                 $replacedValue = Config::getValue($GLOBALS, $matches[2]);
@@ -72,8 +89,10 @@ class PlaceholderValue implements ConfigProcessorInterface
                 $replacedValue = $matches[0];
         }
         if ($value === $matches[0]) {
+            // Direct match, replace as is
             return $replacedValue;
         }
+        // Replace match inside string
         return preg_replace(self::PLACEHOLDER_PATTERN, $replacedValue, $value);
     }
 }
