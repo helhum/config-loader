@@ -61,6 +61,15 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
                     ],
                 ],
             ],
+            'Replaces conf value with dots' => [
+                '%conf("foo.bar".baz)%',
+                42,
+                [
+                    'foo.bar' => [
+                        'baz' => 42,
+                    ],
+                ],
+            ],
             'Recursively replaces conf value' => [
                 '%conf(foo.bar)%',
                 'bar',
@@ -103,6 +112,38 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
                     ],
                 ],
             ],
+            'Not existing env var throws exception' => [
+                1519640359,
+                [
+                    'foo' => [
+                        'bar' => '%env(bla)%',
+                    ],
+                ],
+            ],
+            'Not defined constant throws exception' => [
+                1519640600,
+                [
+                    'foo' => [
+                        'bar' => '%const(bla)%',
+                    ],
+                ],
+            ],
+            'Not existing config path throws exception' => [
+                1519640588,
+                [
+                    'foo' => [
+                        'bar' => '%conf(bla)%',
+                    ],
+                ],
+            ],
+            'Not existing config path in global throws exception' => [
+                1519640631,
+                [
+                    'foo' => [
+                        'bar' => '%global(bla)%',
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -112,11 +153,58 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
      * @param int|null $expectedExceptionCode
      * @param array $config
      */
-    public function invalidConfigThrowsException(int $expectedExceptionCode, array $config)
+    public function invalidConfigThrowsExceptionInStrictMode(int $expectedExceptionCode, array $config)
     {
         $subject = new PlaceholderValue();
         $this->expectException(InvalidConfigurationFileException::class);
         $this->expectExceptionCode($expectedExceptionCode);
         $subject->processConfig($config);
+    }
+
+
+    public function invalidConfigDoesNotReplacePlaceholderInNonStrictModeDataProvider()
+    {
+        return [
+            'Not existing env var' => [
+                [
+                    'foo' => [
+                        'bar' => '%env(bla)%',
+                    ],
+                ],
+            ],
+            'Not defined constant' => [
+                [
+                    'foo' => [
+                        'bar' => '%const(bla)%',
+                    ],
+                ],
+            ],
+            'Not existing config path' => [
+                [
+                    'foo' => [
+                        'bar' => '%conf(bla)%',
+                    ],
+                ],
+            ],
+            'Not existing config path in global' => [
+                [
+                    'foo' => [
+                        'bar' => '%global(bla)%',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidConfigDoesNotReplacePlaceholderInNonStrictModeDataProvider
+     * @param array $config
+     */
+    public function invalidConfigDoesNotReplacePlaceholderInNonStrictMode(array $config)
+    {
+        $subject = new PlaceholderValue(false);
+        $processedConfig = $subject->processConfig($config);
+        $this->assertSame($config, $processedConfig);
     }
 }

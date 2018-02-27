@@ -12,7 +12,9 @@ namespace Helhum\ConfigLoader\Processor;
  */
 
 use Helhum\ConfigLoader\Config;
+use Helhum\ConfigLoader\InvalidArgumentException;
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
+use Helhum\ConfigLoader\PathDoesNotExistException;
 
 class PlaceholderValue implements ConfigProcessorInterface
 {
@@ -27,6 +29,19 @@ class PlaceholderValue implements ConfigProcessorInterface
      * @var array
      */
     private $currentlyReplacingConfPaths = [];
+
+    /**
+     * Strict processing means that an exception is thrown when replacement cannot be done.
+     * In non strict mode placeholder is not replaced
+     *
+     * @var bool
+     */
+    private $strict;
+
+    public function __construct(bool $strict = true)
+    {
+        $this->strict = $strict;
+    }
 
     /**
      * @param array $config
@@ -61,11 +76,24 @@ class PlaceholderValue implements ConfigProcessorInterface
             return $value;
         }
         preg_match(self::PLACEHOLDER_PATTERN, $value, $matches);
+        $replacedValue = $matches[0];
         switch ($matches[1]) {
             case 'env':
+                if (getenv($matches[2]) === false) {
+                    if ($this->strict) {
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (environment variable "%s" does not exist)', $matches[0], $matches[2]), 1519640359);
+                    }
+                    break;
+                }
                 $replacedValue = getenv($matches[2]);
                 break;
             case 'const':
+                if (!defined($matches[2])) {
+                    if ($this->strict) {
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (constant "%s" does not exist)', $matches[0], $matches[2]), 1519640600);
+                    }
+                    break;
+                }
                 $replacedValue = constant($matches[2]);
                 break;
             case 'conf':
@@ -73,20 +101,31 @@ class PlaceholderValue implements ConfigProcessorInterface
                 if (isset($this->currentlyReplacingConfPaths[$configPath])) {
                     throw new InvalidConfigurationFileException(sprintf('Recursion detected for config path "%s"', $configPath), 1519593176);
                 }
-                $this->currentlyReplacingConfPaths[$configPath] = true;
-                $replacedValue = Config::getValue($this->referenceConfig, $configPath);
-                if (is_array($replacedValue)) {
-                    $replacedValue = $this->processConfig($replacedValue);
-                } elseif ($this->isPlaceHolder($replacedValue)) {
-                    $replacedValue = $this->replacePlaceHolder($replacedValue);
+                try {
+                    $this->currentlyReplacingConfPaths[$configPath] = true;
+                    $replacedValue = Config::getValue($this->referenceConfig, $configPath);
+                    if (is_array($replacedValue)) {
+                        $replacedValue = $this->processConfig($replacedValue);
+                    } elseif ($this->isPlaceHolder($replacedValue)) {
+                        $replacedValue = $this->replacePlaceHolder($replacedValue);
+                    }
+                } catch (PathDoesNotExistException $e) {
+                    if ($this->strict) {
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (configuration path "%s" does not exist)', $matches[0], $matches[2]), 1519640588);
+                    }
+                } finally {
+                    unset($this->currentlyReplacingConfPaths[$configPath]);
                 }
-                unset($this->currentlyReplacingConfPaths[$configPath]);
                 break;
             case 'global':
-                $replacedValue = Config::getValue($GLOBALS, $matches[2]);
+                try {
+                    $replacedValue = Config::getValue($GLOBALS, $matches[2]);
+                } catch (PathDoesNotExistException $e) {
+                    if ($this->strict) {
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (global variable path "%s" does not exist)', $matches[0], $matches[2]), 1519640631);
+                    }
+                }
                 break;
-            default:
-                $replacedValue = $matches[0];
         }
         if ($value === $matches[0]) {
             // Direct match, replace as is
