@@ -64,6 +64,51 @@ class PlaceholderValue implements ConfigProcessorInterface
         return $processedConfig;
     }
 
+    /**
+     * @param array $config
+     * @param array|null $types
+     * @param array $accumulatedPlaceholders
+     * @param string $path
+     * @return array
+     */
+    public function findPlaceholders(array $config, array $types = null, array $accumulatedPlaceholders = [], string $path = ''): array
+    {
+        foreach ($config as $key => $value) {
+            if (is_array($value)) {
+                if ($placeholder = $this->extractPlaceHolder($key, $types)) {
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
+                        'path' => $path,
+                        'isKey' => true,
+                        'isDirectMatch' => $placeholder['isDirectMatch'],
+                    ];
+                    unset($placeholder['isDirectMatch']);
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
+                }
+                $accumulatedPlaceholders = $this->findPlaceholders($value, $types, $accumulatedPlaceholders, $path ? $path . '."' . $key . '"' : '"' . $key . '"');
+            } else {
+                if ($placeholder = $this->extractPlaceHolder($key, $types)) {
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
+                        'path' => $path,
+                        'isKey' => true,
+                        'isDirectMatch' => $placeholder['isDirectMatch'],
+                    ];
+                    unset($placeholder['isDirectMatch']);
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
+                }
+                if ($placeholder = $this->extractPlaceHolder($value, $types)) {
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
+                        'path' => $path ? $path . '."' . $key . '"' : '"' . $key . '"',
+                        'isKey' => false,
+                        'isDirectMatch' => $placeholder['isDirectMatch'],
+                    ];
+                    unset($placeholder['isDirectMatch']);
+                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
+                }
+            }
+        }
+        return $accumulatedPlaceholders;
+    }
+
     private function isPlaceHolder($value)
     {
         return is_string($value) && preg_match(self::PLACEHOLDER_PATTERN, $value);

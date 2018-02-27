@@ -11,6 +11,7 @@ namespace Helhum\ConfigLoader\Tests\Unit\Processor;
  * file that was distributed with this source code.
  */
 
+use Helhum\ConfigLoader\Config;
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\Processor\PlaceholderValue;
 
@@ -161,7 +162,6 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         $subject->processConfig($config);
     }
 
-
     public function invalidConfigDoesNotReplacePlaceholderInNonStrictModeDataProvider()
     {
         return [
@@ -206,5 +206,136 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         $subject = new PlaceholderValue(false);
         $processedConfig = $subject->processConfig($config);
         $this->assertSame($config, $processedConfig);
+    }
+
+    public function findPlaceholdersFindsAllPlaceholdersDataProvider()
+    {
+        return [
+            'Env var direct match' => [
+                '%env(foo)%',
+                [
+                    '%env(foo)%',
+                ],
+                [
+                    [
+                        'path' => '"0"',
+                        'isKey' => false,
+                        'isDirectMatch' => true,
+                    ],
+                ],
+            ],
+            'Env var string match' => [
+                '%env(foo)%',
+                [
+                    'is: %env(foo)%',
+                ],
+                [
+                    [
+                        'path' => '"0"',
+                        'isKey' => false,
+                        'isDirectMatch' => false,
+                    ],
+                ],
+            ],
+            'Constant direct match' => [
+                '%const(PHP_BINARY)%',
+                [
+                    '%const(PHP_BINARY)%',
+                ],
+                [
+                    [
+                        'path' => '"0"',
+                        'isKey' => false,
+                        'isDirectMatch' => true,
+                    ],
+                ],
+            ],
+            'Global direct match' => [
+                '%global(foo)%',
+                [
+                    '%global(foo)%',
+                ],
+                [
+                    [
+                        'path' => '"0"',
+                        'isKey' => false,
+                        'isDirectMatch' => true,
+                    ],
+                ],
+            ],
+            'Conf direct match key' => [
+                '%conf(foo.bar)%',
+                [
+                    'bla.blupp' => [
+                        '%conf(foo.bar)%' => 1,
+                    ],
+                ],
+                [
+                    [
+                        'path' => '"bla.blupp"',
+                        'isKey' => true,
+                        'isDirectMatch' => true,
+                    ],
+                ],
+            ],
+            'Conf direct match value' => [
+                '%conf(foo.bar)%',
+                [
+                    'bla.blupp' => [
+                        'bar' => '%conf(foo.bar)%',
+                    ],
+                ],
+                [
+                    [
+                        'path' => '"bla.blupp"."bar"',
+                        'isKey' => false,
+                        'isDirectMatch' => true,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @param string $placeholder
+     * @param array $config
+     * @param array $expectedPaths
+     * @dataProvider findPlaceholdersFindsAllPlaceholdersDataProvider
+     */
+    public function findPlaceholdersFindsAllPlaceholders(string $placeholder, array $config, array $expectedPaths)
+    {
+        $subject = new PlaceholderValue(false);
+        $foundPlaceholders = $subject->findPlaceholders($config);
+        $this->assertArrayHasKey($placeholder, $foundPlaceholders);
+        $this->assertSame($placeholder, $foundPlaceholders[$placeholder]['placeholder']['placeholder']);
+        $this->assertSame($expectedPaths, $foundPlaceholders[$placeholder]['paths']);
+    }
+
+    /**
+     * @test
+     */
+    public function findPlaceholdersFindsPlaceholdersOfSpecificType()
+    {
+        $config = [
+            '%env(foo)%',
+            'is: %env(foo)%',
+            '%const(PHP_BINARY)%',
+            '%global(foo)%',
+            '%global(integer)%',
+            [
+                'bla.blupp' => [
+                    '%conf(foo.bar)%' => 1,
+                    'bar' => '%conf(foo.bar)%',
+                ],
+            ],
+        ];
+        $subject = new PlaceholderValue(false);
+        $foundPlaceholders = $subject->findPlaceholders($config, ['env']);
+        $this->assertCount(1, $foundPlaceholders);
+        $this->assertCount(2, $foundPlaceholders['%env(foo)%']['paths']);
+        $this->assertArrayHasKey('%env(foo)%', $foundPlaceholders);
+        $this->assertSame('foo', $foundPlaceholders['%env(foo)%']['placeholder']['accessor']);
+        $this->assertSame('env', $foundPlaceholders['%env(foo)%']['placeholder']['type']);
     }
 }
