@@ -20,7 +20,7 @@ class Config
      *
      * @param array $config
      * @param string $configPath Path separated by "."
-     * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return mixed
      */
     public static function getValue(array $config, string $configPath)
@@ -37,7 +37,7 @@ class Config
                 $value = $value[$segment];
             } else {
                 // Fail if key does not exist
-                throw new InvalidArgumentException('Path does not exist in array', 1496758722);
+                throw new PathDoesNotExistException(sprintf('Path "%s" does not exist in array (tried reading)', $configPath), 1496758722);
             }
         }
         return $value;
@@ -51,7 +51,7 @@ class Config
      * @param array $array
      * @param string $configPath Path separated by "."
      * @param mixed $value
-     * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return array
      */
     public static function setValue(array $array, string $configPath, $value): array
@@ -88,7 +88,7 @@ class Config
      *
      * @param array $config
      * @param string $configPath Path separated by "."
-     * @throws \Helhum\ConfigLoader\InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return array
      */
     public static function removeValue(array $config, string $configPath): array
@@ -109,7 +109,7 @@ class Config
                 throw new InvalidArgumentException('Invalid path segment specified', 1496759389);
             }
             if (!array_key_exists($segment, $pointer)) {
-                throw new InvalidArgumentException('Path segment ' . $segment . ' does not exist in array', 1496759405);
+                throw new PathDoesNotExistException(sprintf('Path "%s" does not exist in array (tried removing)', $configPath), 1496759405);
             }
             if ($currentDepth === $pathDepth) {
                 unset($pointer[$segment]);
