@@ -12,7 +12,6 @@ namespace Helhum\ConfigLoader\Processor;
  */
 
 use Helhum\ConfigLoader\Config;
-use Helhum\ConfigLoader\InvalidArgumentException;
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\PathDoesNotExistException;
 
@@ -72,32 +71,31 @@ class PlaceholderValue implements ConfigProcessorInterface
 
     private function replacePlaceHolder($value)
     {
-        if (!$this->isPlaceHolder($value)) {
+        if (!$placeholder = $this->extractPlaceHolder($value)) {
             return $value;
         }
-        preg_match(self::PLACEHOLDER_PATTERN, $value, $matches);
-        $replacedValue = $matches[0];
-        switch ($matches[1]) {
+        $replacedValue = $placeholder['placeholder'];
+        switch ($placeholder['type']) {
             case 'env':
-                if (getenv($matches[2]) === false) {
+                if (getenv($placeholder['accessor']) === false) {
                     if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (environment variable "%s" does not exist)', $matches[0], $matches[2]), 1519640359);
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (environment variable "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640359);
                     }
                     break;
                 }
-                $replacedValue = getenv($matches[2]);
+                $replacedValue = getenv($placeholder['accessor']);
                 break;
             case 'const':
-                if (!defined($matches[2])) {
+                if (!defined($placeholder['accessor'])) {
                     if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (constant "%s" does not exist)', $matches[0], $matches[2]), 1519640600);
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (constant "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640600);
                     }
                     break;
                 }
-                $replacedValue = constant($matches[2]);
+                $replacedValue = constant($placeholder['accessor']);
                 break;
             case 'conf':
-                $configPath = $matches[2];
+                $configPath = $placeholder['accessor'];
                 if (isset($this->currentlyReplacingConfPaths[$configPath])) {
                     throw new InvalidConfigurationFileException(sprintf('Recursion detected for config path "%s"', $configPath), 1519593176);
                 }
@@ -111,7 +109,7 @@ class PlaceholderValue implements ConfigProcessorInterface
                     }
                 } catch (PathDoesNotExistException $e) {
                     if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (configuration path "%s" does not exist)', $matches[0], $matches[2]), 1519640588);
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (configuration path "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640588);
                     }
                 } finally {
                     unset($this->currentlyReplacingConfPaths[$configPath]);
@@ -119,19 +117,35 @@ class PlaceholderValue implements ConfigProcessorInterface
                 break;
             case 'global':
                 try {
-                    $replacedValue = Config::getValue($GLOBALS, $matches[2]);
+                    $replacedValue = Config::getValue($GLOBALS, $placeholder['accessor']);
                 } catch (PathDoesNotExistException $e) {
                     if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (global variable path "%s" does not exist)', $matches[0], $matches[2]), 1519640631);
+                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (global variable path "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640631);
                     }
                 }
                 break;
         }
-        if ($value === $matches[0]) {
-            // Direct match, replace as is
+        if ($placeholder['isDirectMatch']) {
             return $replacedValue;
         }
         // Replace match inside string
         return preg_replace(self::PLACEHOLDER_PATTERN, $replacedValue, $value);
+    }
+
+    private function extractPlaceHolder($value, array $types = null): array
+    {
+        if (!$this->isPlaceHolder($value)) {
+            return [];
+        }
+        preg_match(self::PLACEHOLDER_PATTERN, $value, $matches);
+        if ($types !== null && !in_array($matches[1], $types, true)) {
+            return [];
+        }
+        return [
+            'placeholder' => $matches[0],
+            'type' => $matches[1],
+            'accessor' => $matches[2],
+            'isDirectMatch' => $matches[0] === $value,
+        ];
     }
 }
