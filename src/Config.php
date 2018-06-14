@@ -20,10 +20,12 @@ class Config
      *
      * @param array $config
      * @param string $configPath Path separated by "."
+     * @param mixed $default
      * @throws InvalidArgumentException
+     * @throws PathDoesNotExistException
      * @return mixed
      */
-    public static function getValue(array $config, string $configPath)
+    public static function getValue(array $config, string $configPath, $default = null)
     {
         if ($configPath === '') {
             throw new InvalidArgumentException('Path must be not be empty string', 1496758719);
@@ -36,7 +38,10 @@ class Config
                 // Replace current value with child
                 $value = $value[$segment];
             } else {
-                // Fail if key does not exist
+                if (\count(\func_get_args()) !== 2) {
+                    return $default;
+                }
+                // Fail if key does not exist and no default value is provided
                 throw new PathDoesNotExistException(sprintf('Path "%s" does not exist in array (tried reading)', $configPath), 1496758722);
             }
         }
