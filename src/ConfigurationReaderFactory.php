@@ -11,9 +11,9 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
-use Helhum\ConfigLoader\Reader\ClosureConfigReader;
 use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 use Helhum\ConfigLoader\Reader\EnvironmentReader;
+use Helhum\ConfigLoader\Reader\ExcludedConfigReader;
 use Helhum\ConfigLoader\Reader\GlobFileReader;
 use Helhum\ConfigLoader\Reader\NestedConfigReader;
 use Helhum\ConfigLoader\Reader\PeclYamlFileReader;
@@ -134,18 +134,7 @@ class ConfigurationReaderFactory
             if (!is_array($options['exclude'])) {
                 throw new InvalidArgumentException('Excluded array paths must be an array', 1510608229);
             }
-            $reader = new ClosureConfigReader(
-                function () use ($options, $reader) {
-                    $config = $reader->readConfig();
-                    foreach ($options['exclude'] as $overridePath) {
-                        $config = Config::removeValue($config, $overridePath);
-                    }
-                    return $config;
-                },
-                function () use ($reader) {
-                    return $reader->hasConfig();
-                }
-            );
+            $reader = new ExcludedConfigReader($reader, ...$options['exclude']);
         }
 
         return $reader;
