@@ -51,6 +51,7 @@ class PeclYamlFileReader implements ConfigReaderInterface
         if (!is_array($config)) {
             throw new InvalidConfigurationFileException(sprintf('Configuration file "%s" is invalid. It must return an array, but returned "%s"', $this->configFile, gettype($config)), 1518627396);
         }
+
         return $config;
     }
 }

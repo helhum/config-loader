@@ -38,6 +38,7 @@ class ClosureConfigReader implements ConfigReaderInterface
         if ($this->hasConfigClosure) {
             return ($this->hasConfigClosure)();
         }
+
         return count($this->readConfig()) > 0;
     }
 

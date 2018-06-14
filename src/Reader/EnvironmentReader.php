@@ -50,6 +50,7 @@ class EnvironmentReader implements ConfigReaderInterface
                 $value
             );
         }
+
         return $finalConfiguration;
     }
 }

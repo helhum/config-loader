@@ -41,6 +41,7 @@ class GlobFileReader implements ConfigReaderInterface
         if ($this->globFiles === null) {
             $this->globFiles = glob($this->resourceFile);
         }
+
         return !empty($this->globFiles);
     }
 
@@ -55,6 +56,7 @@ class GlobFileReader implements ConfigReaderInterface
         foreach ($this->globFiles as $settingsFile) {
             $readers[] = $this->factory->createRootReader($settingsFile);
         }
+
         return (new CollectionReader(...$readers))->readConfig();
     }
 }

@@ -65,6 +65,7 @@ class ConfigurationReaderFactory
                     if ($this->isFileResource($resource, $options)) {
                         $factory = $this->withResourceBasePath(dirname($resource));
                     }
+
                     return new RootConfigFileReader($resource, $options, $factory);
                 },
                 'isFileResource' => false,
@@ -74,6 +75,7 @@ class ConfigurationReaderFactory
                     if (extension_loaded('yaml')) {
                         return new PeclYamlFileReader($resource);
                     }
+
                     return new YamlFileReader($resource);
                 },
                 'isFileResource' => true,
@@ -118,6 +120,7 @@ class ConfigurationReaderFactory
         foreach ($this->addedReaderTypes as $type => $readerFactoryOptions) {
             $newFactory->setReaderFactoryForType($type, $readerFactoryOptions['factory'], $readerFactoryOptions['isFileResource']);
         }
+
         return $newFactory;
     }
 
@@ -163,8 +166,10 @@ class ConfigurationReaderFactory
         }
         if (is_string($this->readerTypes[$type]['factory'])) {
             $options['type'] = $this->readerTypes[$type]['factory'];
+
             return $this->resolveType($resource, $options);
         }
+
         return $type;
     }
 
@@ -176,6 +181,7 @@ class ConfigurationReaderFactory
         if ($this->resourceBasePath === null) {
             throw new InvalidArgumentException(sprintf('Could not find resource "%s"', $resource), 1516823055);
         }
+
         return $this->resourceBasePath . '/' . $resource;
     }
 

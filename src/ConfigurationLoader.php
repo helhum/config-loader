@@ -64,6 +64,7 @@ class ConfigurationLoader
         foreach ($this->configProcessors as $configProcessor) {
             $finalConfig = $configProcessor->processConfig($finalConfig);
         }
+
         return $finalConfig;
     }
 

@@ -36,6 +36,7 @@ class CollectionReader implements ConfigReaderInterface
     public function readConfig(): array
     {
         $configLoader = new ConfigurationLoader($this->readers);
+
         return $configLoader->load();
     }
 }

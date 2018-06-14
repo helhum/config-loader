@@ -62,6 +62,7 @@ class CachedConfigurationLoader
             $this->cleanCache();
             $this->storeCache($finalConfiguration);
         }
+
         return $finalConfiguration;
     }
 
@@ -84,6 +85,7 @@ return
 $configString;
 
 EOF;
+
         return file_put_contents($this->cacheFileName, $content);
     }
 

@@ -106,6 +106,7 @@ class PlaceholderValue implements ConfigProcessorInterface
                 }
             }
         }
+
         return $accumulatedPlaceholders;
     }
 
@@ -186,6 +187,7 @@ class PlaceholderValue implements ConfigProcessorInterface
         if ($types !== null && !in_array($matches[1], $types, true)) {
             return [];
         }
+
         return [
             'placeholder' => $matches[0],
             'type' => $matches[1],

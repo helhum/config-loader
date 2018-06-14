@@ -45,6 +45,7 @@ class Config
                 throw new PathDoesNotExistException(sprintf('Path "%s" does not exist in array (tried reading)', $configPath), 1496758722);
             }
         }
+
         return $value;
     }
 
@@ -83,6 +84,7 @@ class Config
         }
         // Set value of target cell
         $pointer = $value;
+
         return $array;
     }
 
@@ -122,6 +124,7 @@ class Config
                 $pointer = &$pointer[$segment];
             }
         }
+
         return $config;
     }
 }
