@@ -162,7 +162,7 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         $subject->processConfig($config);
     }
 
-    public function invalidConfigDoesNotReplacePlaceholderInNonStrictModeDataProvider()
+    public function invalidConfigReplacesPlaceholderInNonStrictModeWithNullDataProvider()
     {
         return [
             'Not existing env var' => [
@@ -198,14 +198,19 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @dataProvider invalidConfigDoesNotReplacePlaceholderInNonStrictModeDataProvider
+     * @dataProvider invalidConfigReplacesPlaceholderInNonStrictModeWithNullDataProvider
      * @param array $config
      */
-    public function invalidConfigDoesNotReplacePlaceholderInNonStrictMode(array $config)
+    public function invalidConfigReplacesPlaceholderInNonStrictModeWithNull(array $config)
     {
         $subject = new PlaceholderValue(false);
         $processedConfig = $subject->processConfig($config);
-        $this->assertSame($config, $processedConfig);
+        $expectedConfig = [
+            'foo' => [
+                'bar' => null,
+            ],
+        ];
+        $this->assertSame($expectedConfig, $processedConfig);
     }
 
     public function findPlaceholdersFindsAllPlaceholdersDataProvider()

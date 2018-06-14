@@ -119,7 +119,7 @@ class PlaceholderValue implements ConfigProcessorInterface
         if (!$placeholder = $this->extractPlaceHolder($value)) {
             return $value;
         }
-        $replacedValue = $placeholder['placeholder'];
+        $replacedValue = null;
         switch ($placeholder['type']) {
             case 'env':
                 if (getenv($placeholder['accessor']) === false) {
