@@ -28,7 +28,7 @@ $config = $configLoader->load();
 $context = 'production';
 $confDir = '/path/to/conf';
 $cacheDir = '/path/to/cache';
-$cacheIdentifier = md5($context . filemtime('/path/to/.env');
+$cacheIdentifier = md5($context . filemtime('/path/to/.env'));
 $configReaderFactory = new \Helhum\ConfigLoader\ConfigurationReaderFactory($confDir);
 $configLoader = new \Helhum\ConfigLoader\CachedConfigurationLoader(
     $cacheDir,
