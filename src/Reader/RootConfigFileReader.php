@@ -73,9 +73,11 @@ class RootConfigFileReader implements ConfigReaderInterface
                 throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resource), 1496583180);
             }
             $reader = $this->factory->createRootReader($import['resource'], $import);
+            // @deprecated ignore_errors is deprecated in favor of optional
             $ignoreErrors = $import['ignore_errors'] ?? false;
+            $isOptional = $import['optional'] ?? false;
             if (!$reader->hasConfig()) {
-                if ($ignoreErrors) {
+                if ($ignoreErrors || $isOptional) {
                     continue;
                 }
                 throw new InvalidArgumentException(sprintf('Could not import mandatory resource "%s" in "%s"', $import['resource'], $this->resource), 1496585828);

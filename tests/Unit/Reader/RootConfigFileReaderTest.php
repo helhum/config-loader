@@ -130,6 +130,15 @@ class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function notAvailableImportResourceIsIgnoredWhenOptional()
+    {
+        $reader = new RootConfigFileReader($this->resourceBaseBath . '/optional_import.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
+        $this->assertSame([], $reader->readConfig());
+    }
+
+    /**
+     * @test
+     */
     public function importGlobImportsAllFiles()
     {
         $reader = new RootConfigFileReader($this->resourceBaseBath . '/glob.yml', [], new ConfigurationReaderFactory($this->resourceBaseBath));
