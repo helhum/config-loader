@@ -11,7 +11,7 @@ namespace Helhum\ConfigLoader;
  * file that was distributed with this source code.
  */
 
-class CachedConfigurationLoader
+class CachedConfigurationLoader implements ConfigurationLoaderInterface
 {
     const CACHE_FILE_PATTERN = '/cached-config-%s.php';
 

@@ -14,7 +14,7 @@ namespace Helhum\ConfigLoader;
 use Helhum\ConfigLoader\Processor\ConfigProcessorInterface;
 use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 
-class ConfigurationLoader
+class ConfigurationLoader implements ConfigurationLoaderInterface
 {
     /**
      * @var ConfigReaderInterface[]
