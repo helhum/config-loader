@@ -39,7 +39,7 @@ class GlobFileReader implements ConfigReaderInterface
     public function hasConfig(): bool
     {
         if ($this->globFiles === null) {
-            $this->globFiles = glob($this->resourceFile);
+            $this->globFiles = glob($this->resourceFile, GLOB_BRACE);
         }
 
         return !empty($this->globFiles);
