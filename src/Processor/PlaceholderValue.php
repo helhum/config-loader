@@ -13,12 +13,15 @@ namespace Helhum\ConfigLoader\Processor;
 
 use Helhum\ConfigLoader\Config;
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
-use Helhum\ConfigLoader\PathDoesNotExistException;
+use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderInterface;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderMatcher;
 
 class PlaceholderValue implements ConfigProcessorInterface
 {
-    const PLACEHOLDER_PATTERN = '/%(env|const|conf|global)\(([^)]+)\)%/';
-
     /**
      * @var array
      */
@@ -27,7 +30,7 @@ class PlaceholderValue implements ConfigProcessorInterface
     /**
      * @var array
      */
-    private $currentlyReplacingConfPaths = [];
+    private $currentlyReplacingPlaceholder = [];
 
     /**
      * Strict processing means that an exception is thrown when replacement cannot be done.
@@ -37,9 +40,26 @@ class PlaceholderValue implements ConfigProcessorInterface
      */
     private $strict;
 
-    public function __construct(bool $strict = true)
+    /**
+     * @var PlaceholderMatcher
+     */
+    private $placeholderMatcher;
+
+    /**
+     * @var PlaceholderInterface[]
+     */
+    private $placeHolders;
+
+    public function __construct(bool $strict = true, array $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
     {
         $this->strict = $strict;
+        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher();
+        $this->placeHolders = $placeHolders ?? [
+            new EnvironmentPlaceholder(),
+            new ConstantPlaceholder(),
+            new ConfigurationPlaceholder(),
+            new GlobalsPlaceholder(),
+        ];
     }
 
     /**
@@ -49,7 +69,7 @@ class PlaceholderValue implements ConfigProcessorInterface
      */
     public function processConfig(array $config): array
     {
-        if (null === $this->referenceConfig) {
+        if ($this->referenceConfig === null) {
             $this->referenceConfig = $config;
         }
         $processedConfig = [];
@@ -64,135 +84,42 @@ class PlaceholderValue implements ConfigProcessorInterface
         return $processedConfig;
     }
 
-    /**
-     * @param array $config
-     * @param array|null $types
-     * @param array $accumulatedPlaceholders
-     * @param string $path
-     * @return array
-     */
-    public function findPlaceholders(array $config, array $types = null, array $accumulatedPlaceholders = [], string $path = ''): array
-    {
-        foreach ($config as $key => $value) {
-            if (is_array($value)) {
-                if ($placeholder = $this->extractPlaceHolder($key, $types)) {
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
-                        'path' => $path,
-                        'isKey' => true,
-                        'isDirectMatch' => $placeholder['isDirectMatch'],
-                    ];
-                    unset($placeholder['isDirectMatch']);
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
-                }
-                $accumulatedPlaceholders = $this->findPlaceholders($value, $types, $accumulatedPlaceholders, $path ? $path . '."' . $key . '"' : '"' . $key . '"');
-            } else {
-                if ($placeholder = $this->extractPlaceHolder($key, $types)) {
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
-                        'path' => $path,
-                        'isKey' => true,
-                        'isDirectMatch' => $placeholder['isDirectMatch'],
-                    ];
-                    unset($placeholder['isDirectMatch']);
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
-                }
-                if ($placeholder = $this->extractPlaceHolder($value, $types)) {
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['paths'][] = [
-                        'path' => $path ? $path . '."' . $key . '"' : '"' . $key . '"',
-                        'isKey' => false,
-                        'isDirectMatch' => $placeholder['isDirectMatch'],
-                    ];
-                    unset($placeholder['isDirectMatch']);
-                    $accumulatedPlaceholders[$placeholder['placeholder']]['placeholder'] = $placeholder;
-                }
-            }
-        }
-
-        return $accumulatedPlaceholders;
-    }
-
-    private function isPlaceHolder($value)
-    {
-        return is_string($value) && preg_match(self::PLACEHOLDER_PATTERN, $value);
-    }
-
     private function replacePlaceHolder($value)
     {
-        if (!$placeholder = $this->extractPlaceHolder($value)) {
+        if (!$this->placeholderMatcher->isPlaceHolder($value)) {
             return $value;
         }
+
+        $placeholderMatch = $this->placeholderMatcher->extractPlaceHolder($value);
         $replacedValue = null;
-        switch ($placeholder['type']) {
-            case 'env':
-                if (getenv($placeholder['accessor']) === false) {
-                    if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (environment variable "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640359);
-                    }
-                    break;
-                }
-                $replacedValue = getenv($placeholder['accessor']);
-                break;
-            case 'const':
-                if (!defined($placeholder['accessor'])) {
-                    if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (constant "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640600);
-                    }
-                    break;
-                }
-                $replacedValue = constant($placeholder['accessor']);
-                break;
-            case 'conf':
-                $configPath = $placeholder['accessor'];
-                if (isset($this->currentlyReplacingConfPaths[$configPath])) {
-                    throw new InvalidConfigurationFileException(sprintf('Recursion detected for config path "%s"', $configPath), 1519593176);
-                }
-                try {
-                    $this->currentlyReplacingConfPaths[$configPath] = true;
-                    $replacedValue = Config::getValue($this->referenceConfig, $configPath);
-                    if (is_array($replacedValue)) {
-                        $replacedValue = $this->processConfig($replacedValue);
-                    } elseif ($this->isPlaceHolder($replacedValue)) {
-                        $replacedValue = $this->replacePlaceHolder($replacedValue);
-                    }
-                } catch (PathDoesNotExistException $e) {
-                    if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (configuration path "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640588);
-                    }
-                } finally {
-                    unset($this->currentlyReplacingConfPaths[$configPath]);
-                }
-                break;
-            case 'global':
-                try {
-                    $replacedValue = Config::getValue($GLOBALS, $placeholder['accessor']);
-                } catch (PathDoesNotExistException $e) {
-                    if ($this->strict) {
-                        throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s" (global variable path "%s" does not exist)', $placeholder['placeholder'], $placeholder['accessor']), 1519640631);
-                    }
-                }
-                break;
+
+        if (isset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()])) {
+            throw new InvalidConfigurationFileException(sprintf('Recursion detected for placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519593176);
         }
-        if ($placeholder['isDirectMatch']) {
+        $this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()] = true;
+        $foundMatch = false;
+        foreach ($this->placeHolders as $placeHolder) {
+            if ($placeHolder->supports($placeholderMatch->getType()) && $placeHolder->canReplace($placeholderMatch->getAccessor(), $this->referenceConfig)) {
+                $replacedValue = $placeHolder->representsValue($placeholderMatch->getAccessor(), $this->referenceConfig);
+                if (is_array($replacedValue)) {
+                    $replacedValue = $this->processConfig($replacedValue);
+                } elseif ($this->placeholderMatcher->isPlaceHolder($replacedValue)) {
+                    $replacedValue = $this->replacePlaceHolder($replacedValue);
+                }
+                $foundMatch = true;
+                break;
+            }
+        }
+        unset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()]);
+
+        if (!$foundMatch && $this->strict) {
+            throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519640359);
+        }
+
+        if ($placeholderMatch->isDirectMatch()) {
             return $replacedValue;
         }
         // Replace match inside string
-        return preg_replace(self::PLACEHOLDER_PATTERN, $replacedValue, $value);
-    }
-
-    private function extractPlaceHolder($value, array $types = null): array
-    {
-        if (!$this->isPlaceHolder($value)) {
-            return [];
-        }
-        preg_match(self::PLACEHOLDER_PATTERN, $value, $matches);
-        if ($types !== null && !in_array($matches[1], $types, true)) {
-            return [];
-        }
-
-        return [
-            'placeholder' => $matches[0],
-            'type' => $matches[1],
-            'accessor' => $matches[2],
-            'isDirectMatch' => $matches[0] === $value,
-        ];
+        return str_replace($placeholderMatch->getPlaceholder(), (string)$replacedValue, $value);
     }
 }
