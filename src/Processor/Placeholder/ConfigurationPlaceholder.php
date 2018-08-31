@@ -17,6 +17,11 @@ use Helhum\ConfigLoader\PathDoesNotExistException;
 
 class ConfigurationPlaceholder implements PlaceholderInterface
 {
+    public function supportedTypes(): array
+    {
+        return ['conf'];
+    }
+
     public function supports(string $type): bool
     {
         return $type === 'conf';

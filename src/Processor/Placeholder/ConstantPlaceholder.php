@@ -13,6 +13,11 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
 
 class ConstantPlaceholder implements PlaceholderInterface
 {
+    public function supportedTypes(): array
+    {
+        return ['const'];
+    }
+
     public function supports(string $type): bool
     {
         return $type === 'const';

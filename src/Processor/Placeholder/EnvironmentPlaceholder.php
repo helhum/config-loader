@@ -13,6 +13,11 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
 
 class EnvironmentPlaceholder implements PlaceholderInterface
 {
+    public function supportedTypes(): array
+    {
+        return ['env'];
+    }
+
     public function supports(string $type): bool
     {
         return $type === 'env';

@@ -50,16 +50,32 @@ class PlaceholderValue implements ConfigProcessorInterface
      */
     private $placeHolders;
 
+    /**
+     * @var string[]
+     */
+    private $supportedTypes = [];
+
     public function __construct(bool $strict = true, array $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
     {
         $this->strict = $strict;
-        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher();
         $this->placeHolders = $placeHolders ?? [
             new EnvironmentPlaceholder(),
             new ConstantPlaceholder(),
             new ConfigurationPlaceholder(),
             new GlobalsPlaceholder(),
         ];
+        $this->supportedTypes = $this->extractSupportedTypes();
+        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher($this->supportedTypes);
+    }
+
+    private function extractSupportedTypes(): array
+    {
+        $types = [];
+        foreach ($this->placeHolders as $placeHolder) {
+            $types = array_merge($types, $placeHolder->supportedTypes());
+        }
+
+        return $types;
     }
 
     /**

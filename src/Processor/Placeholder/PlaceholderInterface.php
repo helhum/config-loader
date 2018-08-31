@@ -13,6 +13,8 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
 
 interface PlaceholderInterface
 {
+    public function supportedTypes(): array;
+
     public function supports(string $type): bool;
 
     public function canReplace(string $accessor, array $referenceConfig = []): bool;

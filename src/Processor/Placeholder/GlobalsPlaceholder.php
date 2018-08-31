@@ -16,6 +16,11 @@ use Helhum\ConfigLoader\PathDoesNotExistException;
 
 class GlobalsPlaceholder implements PlaceholderInterface
 {
+    public function supportedTypes(): array
+    {
+        return ['global'];
+    }
+
     public function supports(string $type): bool
     {
         return $type === 'global';

@@ -12,6 +12,8 @@ namespace Helhum\ConfigLoader\Tests\Unit;
  */
 
 use Helhum\ConfigLoader\ConfigurationExporter;
+use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
 
 class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
 {
@@ -66,6 +68,25 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
     \'foo\' => true,
 ]',
             ],
+        ];
+    }
+
+    /**
+     * @param $value
+     * @param string $phpCode
+     * @param array $referenceConfig
+     * @test
+     * @dataProvider properlyExportsValueToPhpCodeDataProvider
+     */
+    public function properlyExportsValueToPhpCode($value, string $phpCode, array $referenceConfig = [])
+    {
+        $exporter = new ConfigurationExporter();
+        $this->assertSame($phpCode, $exporter->exportPhpCode($value, $referenceConfig));
+    }
+
+    public function properlyExportsValueWithPlaceholdersToPhpCodeDataProvider(): array
+    {
+        return [
             'With env placeholder' => [
                 '%env(foo)%',
                 'getenv(\'foo\')',
@@ -86,11 +107,16 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
      * @param string $phpCode
      * @param array $referenceConfig
      * @test
-     * @dataProvider properlyExportsValueToPhpCodeDataProvider
+     * @dataProvider properlyExportsValueWithPlaceholdersToPhpCodeDataProvider
      */
-    public function properlyExportsValueToPhpCode($value, string $phpCode, array $referenceConfig = [])
+    public function properlyExportsValueWithPlaceholdersToPhpCode($value, string $phpCode, array $referenceConfig = [])
     {
-        $exporter = new ConfigurationExporter();
+        $exporter = new ConfigurationExporter(
+            [
+                new EnvironmentPlaceholder(),
+                new GlobalsPlaceholder(),
+            ]
+        );
         $this->assertSame($phpCode, $exporter->exportPhpCode($value, $referenceConfig));
     }
 }
