@@ -35,7 +35,12 @@ class ConfigurationExporter
 
     public function __construct(PlaceholderCollection $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
     {
-        $this->placeHolders = $placeHolders ?? new PlaceholderCollection([]);
+        $this->placeHolders = $placeHolders ?? new PlaceholderCollection([
+            new EnvironmentPlaceholder(),
+            new ConstantPlaceholder(),
+            new ConfigurationPlaceholder(),
+            new GlobalsPlaceholder(),
+        ]);
         $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher($this->placeHolders->supportedTypes());
     }
 
