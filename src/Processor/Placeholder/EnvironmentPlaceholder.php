@@ -11,7 +11,7 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
  * file that was distributed with this source code.
  */
 
-class EnvironmentPlaceholder implements PlaceholderInterface
+class EnvironmentPlaceholder implements PhpExportablePlaceholderInterface
 {
     public function supportedTypes(): array
     {

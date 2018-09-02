@@ -15,8 +15,11 @@ use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\PhpExportablePlaceholderInterface;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderInterface;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderMatcher;
+use Helhum\ConfigLoader\Processor\PlaceholderValue;
 
 class ConfigurationExporter
 {
@@ -26,14 +29,14 @@ class ConfigurationExporter
     private $placeholderMatcher;
 
     /**
-     * @var PlaceholderInterface[]
+     * @var PlaceholderCollection
      */
     private $placeHolders;
 
-    public function __construct(array $placeHolders = [], PlaceholderMatcher $placeholderMatcher = null)
+    public function __construct(PlaceholderCollection $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
     {
-        $this->placeHolders = $placeHolders;
-        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher();
+        $this->placeHolders = $placeHolders ?? new PlaceholderCollection([]);
+        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher($this->placeHolders->supportedTypes());
     }
 
     /**
@@ -50,6 +53,7 @@ class ConfigurationExporter
             if ($value === []) {
                 $code = '[]';
             } else {
+                $value = $this->replacePlaceHolders($value);
                 $code = '[' . chr(10);
                 $writeIndex = $this->isHashMap($value);
                 foreach ($value as $key => $arrayValue) {
@@ -94,6 +98,13 @@ class ConfigurationExporter
         return false;
     }
 
+    private function replacePlaceHolders(array $config): array
+    {
+        $placeholderProcessor = new PlaceholderValue(false, $this->placeHolders->onlyStatic());
+
+        return $placeholderProcessor->processConfig($config);
+    }
+
     private function getPhpCodeForPlaceholder($value, array $referenceConfig): string
     {
         $phpCode = '\'' . $this->escapePhpValue($value) . '\'';
@@ -101,7 +112,6 @@ class ConfigurationExporter
         if (!$this->placeholderMatcher->isPlaceHolder($value)) {
             return $phpCode;
         }
-
         $placeholderMatch = $this->placeholderMatcher->extractPlaceHolder($value);
 
         foreach ($this->placeHolders as $placeHolder) {

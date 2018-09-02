@@ -11,13 +11,7 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
  * file that was distributed with this source code.
  */
 
-interface PlaceholderInterface
+interface PhpExportablePlaceholderInterface extends PlaceholderInterface
 {
-    public function supportedTypes(): array;
-
-    public function supports(string $type): bool;
-
-    public function canReplace(string $accessor, array $referenceConfig = []): bool;
-
-    public function representsValue(string $accessor, array $referenceConfig = []);
+    public function representsPhpCode(string $accessor, array $referenceConfig = []): string;
 }

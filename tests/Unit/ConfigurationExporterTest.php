@@ -12,8 +12,10 @@ namespace Helhum\ConfigLoader\Tests\Unit;
  */
 
 use Helhum\ConfigLoader\ConfigurationExporter;
+use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
 
 class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
 {
@@ -112,11 +114,37 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
     public function properlyExportsValueWithPlaceholdersToPhpCode($value, string $phpCode, array $referenceConfig = [])
     {
         $exporter = new ConfigurationExporter(
-            [
+            new PlaceholderCollection([
                 new EnvironmentPlaceholder(),
                 new GlobalsPlaceholder(),
-            ]
+            ])
         );
         $this->assertSame($phpCode, $exporter->exportPhpCode($value, $referenceConfig));
+    }
+
+    /**
+     * @test
+     */
+    public function confPlaceholderIsExportedStatic()
+    {
+        $value = [
+            'foo' => '%env(FOO)%',
+            'bar' => '%conf(foo)%',
+        ];
+
+        $expectedPhpCode = <<<'EOF'
+[
+    'foo' => getenv('FOO'),
+    'bar' => getenv('FOO'),
+]
+EOF;
+
+        $exporter = new ConfigurationExporter(
+            new PlaceholderCollection([
+                new EnvironmentPlaceholder(),
+                new ConfigurationPlaceholder(),
+            ])
+        );
+        $this->assertSame($expectedPhpCode, $exporter->exportPhpCode($value));
     }
 }

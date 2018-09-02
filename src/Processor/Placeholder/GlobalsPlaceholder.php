@@ -14,7 +14,7 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
 use Helhum\ConfigLoader\Config;
 use Helhum\ConfigLoader\PathDoesNotExistException;
 
-class GlobalsPlaceholder implements PlaceholderInterface
+class GlobalsPlaceholder implements PhpExportablePlaceholderInterface
 {
     public function supportedTypes(): array
     {

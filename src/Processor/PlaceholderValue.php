@@ -17,6 +17,7 @@ use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderInterface;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderMatcher;
 
@@ -46,36 +47,20 @@ class PlaceholderValue implements ConfigProcessorInterface
     private $placeholderMatcher;
 
     /**
-     * @var PlaceholderInterface[]
+     * @var PlaceholderCollection
      */
     private $placeHolders;
 
-    /**
-     * @var string[]
-     */
-    private $supportedTypes = [];
-
-    public function __construct(bool $strict = true, array $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
+    public function __construct(bool $strict = true, PlaceholderCollection $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
     {
         $this->strict = $strict;
-        $this->placeHolders = $placeHolders ?? [
+        $this->placeHolders = $placeHolders ?? new PlaceholderCollection([
             new EnvironmentPlaceholder(),
             new ConstantPlaceholder(),
             new ConfigurationPlaceholder(),
             new GlobalsPlaceholder(),
-        ];
-        $this->supportedTypes = $this->extractSupportedTypes();
-        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher($this->supportedTypes);
-    }
-
-    private function extractSupportedTypes(): array
-    {
-        $types = [];
-        foreach ($this->placeHolders as $placeHolder) {
-            $types = array_merge($types, $placeHolder->supportedTypes());
-        }
-
-        return $types;
+        ]);
+        $this->placeholderMatcher = $placeholderMatcher ?? new PlaceholderMatcher($this->placeHolders->supportedTypes());
     }
 
     /**

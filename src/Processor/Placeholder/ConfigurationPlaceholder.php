@@ -42,11 +42,4 @@ class ConfigurationPlaceholder implements PlaceholderInterface
     {
         return Config::getValue($referenceConfig, $accessor);
     }
-
-    public function representsPhpCode(string $accessor, array $referenceConfig = []): string
-    {
-        $subConfig = Config::getValue($referenceConfig, $accessor);
-
-        return (new ConfigurationExporter())->exportPhpCode($subConfig, $referenceConfig);
-    }
 }
