@@ -93,6 +93,22 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
                 '%env(foo)%',
                 'getenv(\'foo\')',
             ],
+            'With env placeholder int' => [
+                '%env(int:foo)%',
+                '(int)(getenv(\'foo\'))',
+            ],
+            'With env placeholder bool' => [
+                '%env(bool:foo)%',
+                '(bool)(getenv(\'foo\'))',
+            ],
+            'With env placeholder float' => [
+                '%env(float:foo)%',
+                '(float)(getenv(\'foo\'))',
+            ],
+            'With env placeholder string' => [
+                '%env(string:foo)%',
+                '(string)(getenv(\'foo\'))',
+            ],
             'With env placeholder with quote accessor' => [
                 '%env(fo\'o)%',
                 'getenv(\'fo\\\'o\')',
@@ -100,6 +116,10 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
             'With global placeholder' => [
                 '%global(foo.bar)%',
                 '$GLOBALS[\'foo\'][\'bar\']',
+            ],
+            'With global placeholder int' => [
+                '%global(int:foo.bar)%',
+                '(int)($GLOBALS[\'foo\'][\'bar\'])',
             ],
         ];
     }

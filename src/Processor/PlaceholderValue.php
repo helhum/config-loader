@@ -101,7 +101,11 @@ class PlaceholderValue implements ConfigProcessorInterface
         $foundMatch = false;
         foreach ($this->placeHolders as $placeHolder) {
             if ($placeHolder->supports($placeholderMatch->getType()) && $placeHolder->canReplace($placeholderMatch->getAccessor(), $this->referenceConfig)) {
-                $replacedValue = $placeHolder->representsValue($placeholderMatch->getAccessor(), $this->referenceConfig);
+                $replacedValue = $this->cast(
+                    $placeHolder->representsValue($placeholderMatch->getAccessor(), $this->referenceConfig),
+                    $placeholderMatch->getDataType()
+                );
+
                 if (is_array($replacedValue)) {
                     $replacedValue = $this->processConfig($replacedValue);
                 } elseif ($this->placeholderMatcher->isPlaceHolder($replacedValue)) {
@@ -122,5 +126,21 @@ class PlaceholderValue implements ConfigProcessorInterface
         }
         // Replace match inside string
         return str_replace($placeholderMatch->getPlaceholder(), (string)$replacedValue, $value);
+    }
+
+    private function cast($value, string $dataType)
+    {
+        switch ($dataType) {
+            case 'int':
+                return (int)$value;
+            case 'string':
+                return (string)$value;
+            case 'bool':
+                return (bool)$value;
+            case 'float':
+                return (float)$value;
+        }
+
+        return $value;
     }
 }

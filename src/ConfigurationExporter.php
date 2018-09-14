@@ -122,6 +122,9 @@ class ConfigurationExporter
         foreach ($this->placeHolders as $placeHolder) {
             if ($placeHolder->supports($placeholderMatch->getType())) {
                 $phpCode = $placeHolder->representsPhpCode($placeholderMatch->getAccessor(), $referenceConfig);
+                if ($placeholderMatch->getDataType()) {
+                    $phpCode = sprintf('(%s)(%s)', $placeholderMatch->getDataType(), $phpCode);
+                }
 
                 if ($placeholderMatch->isDirectMatch()) {
                     return $phpCode;

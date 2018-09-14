@@ -26,6 +26,11 @@ class PlaceholderMatch
     /**
      * @var string
      */
+    private $dataType;
+
+    /**
+     * @var string
+     */
     private $accessor;
 
     /**
@@ -46,6 +51,7 @@ class PlaceholderMatch
     public function __construct(
         string $placeholder,
         string $type,
+        string $dataType,
         string $accessor,
         bool $directMatch,
         bool $key = null,
@@ -53,6 +59,7 @@ class PlaceholderMatch
     ) {
         $this->placeholder = $placeholder;
         $this->type = $type;
+        $this->dataType = $dataType;
         $this->accessor = $accessor;
         $this->directMatch = $directMatch;
         $this->key = $key;
@@ -67,6 +74,14 @@ class PlaceholderMatch
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDataType(): string
+    {
+        return $this->dataType;
     }
 
     public function getAccessor(): string

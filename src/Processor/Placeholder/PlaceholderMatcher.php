@@ -14,7 +14,7 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
 class PlaceholderMatcher
 {
     // Should rather be private const, once we raise minimum PHP version to 7.1
-    private static $PLACEHOLDER_PATTERN = '/%([a-z]+)\(([^)]+)\)%/';
+    private static $PLACEHOLDER_PATTERN = '/%([a-z]+)\((int:|bool:|string:|float:)?([^)]+)\)%/';
 
     /**
      * @var string[]
@@ -51,7 +51,8 @@ class PlaceholderMatcher
         return new PlaceholderMatch(
             $matches[0],
             $matches[1],
-            $matches[2],
+            $matches[2] ? rtrim($matches[2], ':') : '',
+            $matches[3],
             $matches[0] === $value
         );
     }

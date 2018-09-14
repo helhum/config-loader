@@ -22,6 +22,7 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         $GLOBALS['foo'] = 'bar';
         $GLOBALS['bar'] = '%env(bar)%';
         $GLOBALS['integer'] = 42;
+        $GLOBALS['fortyTwo'] = '42.3';
         putenv('foo=bar');
         putenv('bar=%env(foo)%');
         putenv('recursion=%env(recursion)%');
@@ -29,7 +30,7 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        unset($GLOBALS['foo'], $GLOBALS['bar'], $GLOBALS['integer']);
+        unset($GLOBALS['foo'], $GLOBALS['bar'], $GLOBALS['integer'], $GLOBALS['fortyTwo']);
         putenv('foo');
         putenv('bar');
         putenv('recursion');
@@ -69,6 +70,22 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
             'Replaces global var and keeps type' => [
                 '%global(integer)%',
                 42,
+            ],
+            'Replaces global var and changes requested type to string' => [
+                '%global(string:integer)%',
+                '42',
+            ],
+            'Replaces global var and changes requested type to int' => [
+                '%global(int:fortyTwo)%',
+                42,
+            ],
+            'Replaces global var and changes requested type to float' => [
+                '%global(float:fortyTwo)%',
+                42.3,
+            ],
+            'Replaces global var and changes requested type to bool' => [
+                '%global(bool:integer)%',
+                true,
             ],
             'Replaces conf value' => [
                 '%conf(foo.bar)%',
