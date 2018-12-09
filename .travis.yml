@@ -35,8 +35,9 @@ script:
     find . -name \*.php ! -path "./vendor/*" | parallel --gnu php -d display_errors=stderr -l {} > /dev/null \;
 
 jobs:
-  fast_finish: true
   include:
+    - stage: test
+      php: 7.3
     - stage: test
       php: 7.2
     - stage: test
