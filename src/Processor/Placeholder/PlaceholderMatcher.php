@@ -26,35 +26,83 @@ class PlaceholderMatcher
         $this->supportedTypes = $supportedTypes;
     }
 
+    /**
+     * @deprecated
+     * @param $value
+     * @param array|null $types
+     * @return bool
+     */
     public function isPlaceHolder($value, array $types = null): bool
     {
-        $types = $types ?: $this->supportedTypes;
+        trigger_error(__FUNCTION__ . ' is deprecated. Use PlaceholderMatcher::hasPlaceHolders instead', \E_USER_DEPRECATED);
 
-        return $this->matches($value)
-            && ($types === null || in_array($this->extractPlaceHolder($value, null)->getType(), $types, true));
+        return $this->hasPlaceHolders($value, $types);
     }
 
+    public function hasPlaceHolders($value, array $types = null): bool
+    {
+        if (!$this->matches($value)) {
+            return false;
+        }
+        $types = $types ?: $this->supportedTypes;
+        if ($types === null) {
+            return true;
+        }
+        $placeHolders = $this->extractPlaceHolders($value, null);
+        foreach ($placeHolders as $placeHolder) {
+            if (in_array($placeHolder->getType(), $types, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @deprecated
+     * @param $value
+     * @param array|null $types
+     * @return PlaceholderMatch
+     */
     public function extractPlaceHolder($value, array $types = null): PlaceholderMatch
+    {
+        trigger_error(__FUNCTION__ . ' is deprecated. Use PlaceholderMatcher::extractPlaceHolders instead', \E_USER_DEPRECATED);
+
+        return $this->extractPlaceHolders($value, $types)[0];
+    }
+
+    /**
+     * @param $value
+     * @param array|null $types
+     * @return PlaceholderMatch[]
+     */
+    public function extractPlaceHolders($value, array $types = null): array
     {
         if (func_num_args() < 2) {
             $types = $types ?: $this->supportedTypes;
         }
 
         if (!$this->matches($value)) {
-            throw new \UnexpectedValueException('Cannot extract placeholder as value does not contain a placeholder', 1534932991);
+            throw new \UnexpectedValueException('Cannot extract placeholder as value does not contain a placeholder', 1556492134);
         }
-        preg_match(self::$PLACEHOLDER_PATTERN, $value, $matches);
-        if ($types !== null && !in_array($matches[1], $types, true)) {
-            throw new \UnexpectedValueException('Cannot extract placeholder because it isn\'t in given types', 1534933036);
+        preg_match_all(self::$PLACEHOLDER_PATTERN, $value, $matches);
+        $placeHolderCount = count($matches[0]);
+        $placeHolderMatches = [];
+        for ($index = 0; $index < $placeHolderCount; $index++) {
+            $placeHolder = new PlaceholderMatch(
+                $matches[0][$index],
+                $matches[1][$index],
+                $matches[2][$index] ? rtrim($matches[2][$index], ':') : '',
+                $matches[3][$index],
+                $matches[0][$index] === $value
+            );
+            if ($types !== null && $placeHolder->isDirectMatch() && !in_array($matches[1][$index], $types, true)) {
+                throw new \UnexpectedValueException('Cannot extract placeholder because it isn\'t in given types', 1556492137);
+            }
+            $placeHolderMatches[] = $placeHolder;
         }
 
-        return new PlaceholderMatch(
-            $matches[0],
-            $matches[1],
-            $matches[2] ? rtrim($matches[2], ':') : '',
-            $matches[3],
-            $matches[0] === $value
-        );
+        return $placeHolderMatches;
     }
 
     private function matches($value): bool

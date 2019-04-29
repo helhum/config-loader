@@ -15,9 +15,7 @@ use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
-use Helhum\ConfigLoader\Processor\Placeholder\PhpExportablePlaceholderInterface;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
-use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderInterface;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderMatcher;
 use Helhum\ConfigLoader\Processor\PlaceholderValue;
 
@@ -112,30 +110,31 @@ class ConfigurationExporter
 
     private function getPhpCodeForPlaceholder($value, array $referenceConfig): string
     {
-        $phpCode = '\'' . $this->escapePhpValue($value) . '\'';
-
-        if (!$this->placeholderMatcher->isPlaceHolder($value)) {
-            return $phpCode;
+        $phpCode = $this->escapePhpValue($value);
+        $replacedValue = null;
+        if (!$this->placeholderMatcher->hasPlaceHolders($value)) {
+            return '\'' . $phpCode . '\'';
         }
-        $placeholderMatch = $this->placeholderMatcher->extractPlaceHolder($value);
+        $placeholderMatches = $this->placeholderMatcher->extractPlaceHolders($value);
+        foreach ($placeholderMatches as $placeholderMatch) {
+            foreach ($this->placeHolders as $placeHolder) {
+                if ($placeHolder->supports($placeholderMatch->getType())) {
+                    $phpCode = $placeHolder->representsPhpCode($placeholderMatch->getAccessor(), $referenceConfig);
+                    if ($placeholderMatch->getDataType()) {
+                        $phpCode = sprintf('(%s)(%s)', $placeholderMatch->getDataType(), $phpCode);
+                    }
 
-        foreach ($this->placeHolders as $placeHolder) {
-            if ($placeHolder->supports($placeholderMatch->getType())) {
-                $phpCode = $placeHolder->representsPhpCode($placeholderMatch->getAccessor(), $referenceConfig);
-                if ($placeholderMatch->getDataType()) {
-                    $phpCode = sprintf('(%s)(%s)', $placeholderMatch->getDataType(), $phpCode);
+                    if ($placeholderMatch->isDirectMatch()) {
+                        return $phpCode;
+                    }
+
+                    // Replace match inside string
+                    $replacedValue = str_replace($placeholderMatch->getPlaceholder(), '\' . ' . $phpCode . ' . \'', $replacedValue ?? $value);
                 }
-
-                if ($placeholderMatch->isDirectMatch()) {
-                    return $phpCode;
-                }
-
-                // Replace match inside string
-                return '\'' . str_replace($placeholderMatch->getPlaceholder(), '\' . ' . $phpCode . ' . \'', $value) . '\'';
             }
         }
 
-        return $phpCode;
+        return '\'' . $replacedValue . '\'';
     }
 
     private function escapePhpValue(string $value): string

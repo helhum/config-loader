@@ -12,7 +12,6 @@ namespace Helhum\ConfigLoader\Processor\Placeholder;
  */
 
 use Helhum\ConfigLoader\Config;
-use Helhum\ConfigLoader\ConfigurationExporter;
 use Helhum\ConfigLoader\PathDoesNotExistException;
 
 class ConfigurationPlaceholder implements PlaceholderInterface

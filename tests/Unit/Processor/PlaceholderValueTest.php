@@ -51,6 +51,18 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
                 'is: %env(foo)%',
                 'is: bar',
             ],
+            'Replaces multiple placeholders' => [
+                'is: %env(foo)% %global(foo)%',
+                'is: bar bar',
+            ],
+            'Replaces multiple placeholders and removes unmatched' => [
+                'is: %env(foo)% %env(baz)% %global(foo)%',
+                'is: bar  bar',
+            ],
+            'Replaces multiple placeholders and keeps unmatched type' => [
+                'is: %bar(baz)% %env(foo)% %global(foo)%',
+                'is: %bar(baz)% bar bar',
+            ],
             'Removes unmatched inline' => [
                 'is: %env(baz)%',
                 'is: ',

@@ -89,6 +89,18 @@ class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
     public function properlyExportsValueWithPlaceholdersToPhpCodeDataProvider(): array
     {
         return [
+            'Replaces multiple placeholders' => [
+                'is: %env(foo)% %global(foo.bar)%',
+                '\'is: \' . getenv(\'foo\') . \' \' . $GLOBALS[\'foo\'][\'bar\'] . \'\'',
+            ],
+            'Replaces multiple placeholders and keeps unmatched type' => [
+                'is: %bar(baz)% %env(foo)% %global(foo.bar)%',
+                '\'is: %bar(baz)% \' . getenv(\'foo\') . \' \' . $GLOBALS[\'foo\'][\'bar\'] . \'\'',
+            ],
+            'Invalid placeholder is not replaced' => [
+                '%bla(foo)%',
+                '\'%bla(foo)%\'',
+            ],
             'With env placeholder' => [
                 '%env(foo)%',
                 'getenv(\'foo\')',

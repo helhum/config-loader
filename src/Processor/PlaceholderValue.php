@@ -18,7 +18,6 @@ use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
-use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderInterface;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderMatcher;
 
 class PlaceholderValue implements ConfigProcessorInterface
@@ -87,45 +86,56 @@ class PlaceholderValue implements ConfigProcessorInterface
 
     private function replacePlaceHolder($value)
     {
-        if (!$this->placeholderMatcher->isPlaceHolder($value)) {
+        if (!$this->placeholderMatcher->hasPlaceHolders($value)) {
             return $value;
         }
 
-        $placeholderMatch = $this->placeholderMatcher->extractPlaceHolder($value);
-        $replacedValue = null;
+        $placeholderMatches = $this->placeholderMatcher->extractPlaceHolders($value);
+        foreach ($placeholderMatches as $placeholderMatch) {
+            $replacedValue = null;
+            if (isset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()])) {
+                throw new InvalidConfigurationFileException(sprintf('Recursion detected for placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519593176);
+            }
+            $this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()] = true;
+            $foundMatch = false;
+            $supports = false;
+            foreach ($this->placeHolders as $placeHolder) {
+                $supports = $placeHolder->supports($placeholderMatch->getType());
+                $canReplace = $placeHolder->canReplace($placeholderMatch->getAccessor(), $this->referenceConfig);
+                $foundMatch = $supports && $canReplace;
+                if ($foundMatch) {
+                    $replacedValue = $this->cast(
+                        $placeHolder->representsValue($placeholderMatch->getAccessor(), $this->referenceConfig),
+                        $placeholderMatch->getDataType()
+                    );
 
-        if (isset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()])) {
-            throw new InvalidConfigurationFileException(sprintf('Recursion detected for placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519593176);
-        }
-        $this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()] = true;
-        $foundMatch = false;
-        foreach ($this->placeHolders as $placeHolder) {
-            if ($placeHolder->supports($placeholderMatch->getType()) && $placeHolder->canReplace($placeholderMatch->getAccessor(), $this->referenceConfig)) {
-                $replacedValue = $this->cast(
-                    $placeHolder->representsValue($placeholderMatch->getAccessor(), $this->referenceConfig),
-                    $placeholderMatch->getDataType()
-                );
-
-                if (is_array($replacedValue)) {
-                    $replacedValue = $this->processConfig($replacedValue);
-                } elseif ($this->placeholderMatcher->isPlaceHolder($replacedValue)) {
-                    $replacedValue = $this->replacePlaceHolder($replacedValue);
+                    if (is_array($replacedValue)) {
+                        $replacedValue = $this->processConfig($replacedValue);
+                    } elseif ($this->placeholderMatcher->hasPlaceHolders($replacedValue)) {
+                        $replacedValue = $this->replacePlaceHolder($replacedValue);
+                    }
                 }
-                $foundMatch = true;
-                break;
+                if ($supports) {
+                    break;
+                }
+            }
+            unset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()]);
+
+            if (!$foundMatch && $this->strict) {
+                throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519640359);
+            }
+
+            if ($placeholderMatch->isDirectMatch()) {
+                return $replacedValue;
+            }
+
+            if ($supports || count($placeholderMatches) === 1) {
+                // Replace match inside string
+                $value = str_replace($placeholderMatch->getPlaceholder(), (string)$replacedValue, $value);
             }
         }
-        unset($this->currentlyReplacingPlaceholder[$placeholderMatch->getPlaceholder()]);
 
-        if (!$foundMatch && $this->strict) {
-            throw new InvalidConfigurationFileException(sprintf('Could not replace placeholder "%s"', $placeholderMatch->getPlaceholder()), 1519640359);
-        }
-
-        if ($placeholderMatch->isDirectMatch()) {
-            return $replacedValue;
-        }
-        // Replace match inside string
-        return str_replace($placeholderMatch->getPlaceholder(), (string)$replacedValue, $value);
+        return $value;
     }
 
     private function cast($value, string $dataType)
