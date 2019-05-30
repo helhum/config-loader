@@ -96,6 +96,7 @@ class Config
      * @param array $config
      * @param string $configPath Path separated by "."
      * @throws InvalidArgumentException
+     * @throws PathDoesNotExistException
      * @return array
      */
     public static function removeValue(array $config, string $configPath): array
