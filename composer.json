@@ -8,7 +8,7 @@
     "require-dev": {
         "symfony/yaml": "^2.8 || ^3.3 || ^4.0",
         "phpunit/phpunit": "^5.0",
-        "mikey179/vfsStream": "^1.6"
+        "mikey179/vfsstream": "^1.6"
     },
     "suggest": {
         "ext-yaml": "For improved performance when parsing yaml files you should use the PECL YAML Parser php extension",
