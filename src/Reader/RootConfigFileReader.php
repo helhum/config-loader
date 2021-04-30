@@ -13,6 +13,12 @@ namespace Helhum\ConfigLoader\Reader;
 
 use Helhum\ConfigLoader\ConfigurationReaderFactory;
 use Helhum\ConfigLoader\InvalidArgumentException;
+use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\ConstantPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
+use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
+use Helhum\ConfigLoader\Processor\PlaceholderValue;
 
 class RootConfigFileReader implements ConfigReaderInterface
 {
@@ -72,6 +78,7 @@ class RootConfigFileReader implements ConfigReaderInterface
             if (!is_array($import)) {
                 throw new InvalidArgumentException(sprintf('The "imports" must be an array in "%s"', $this->resource), 1496583180);
             }
+            $import = $this->replacePlaceHolders($import);
             $reader = $this->factory->createRootReader($import['resource'], $import);
             // @deprecated ignore_errors is deprecated in favor of optional
             $ignoreErrors = $import['ignore_errors'] ?? false;
@@ -87,5 +94,19 @@ class RootConfigFileReader implements ConfigReaderInterface
         unset($config['imports'], self::$currentlyImporting[$this->resource]);
 
         return array_replace_recursive($importedConfig, $config);
+    }
+
+    private function replacePlaceHolders(array $config): array
+    {
+        $placeholderProcessor = new PlaceholderValue(false,
+            new PlaceholderCollection([
+                new EnvironmentPlaceholder(),
+                new ConstantPlaceholder(),
+                new ConfigurationPlaceholder(),
+                new GlobalsPlaceholder(),
+            ])
+        );
+
+        return $placeholderProcessor->processConfig($config);
     }
 }
