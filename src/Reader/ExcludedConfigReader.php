@@ -12,6 +12,7 @@ namespace Helhum\ConfigLoader\Reader;
  */
 
 use Helhum\ConfigLoader\Config;
+use Helhum\ConfigLoader\PathDoesNotExistException;
 
 class ExcludedConfigReader implements ConfigReaderInterface
 {
@@ -40,7 +41,11 @@ class ExcludedConfigReader implements ConfigReaderInterface
     {
         $config = $this->reader->readConfig();
         foreach ($this->configPaths as $overridePath) {
-            $config = Config::removeValue($config, $overridePath);
+            try {
+                $config = Config::removeValue($config, $overridePath);
+            } catch (PathDoesNotExistException $e) {
+                // We only need to make sure config path does not exist
+            }
         }
 
         return $config;
