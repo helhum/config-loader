@@ -14,10 +14,11 @@ namespace Helhum\ConfigLoader\Tests\Unit\Processor;
 use Helhum\ConfigLoader\Config;
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\Processor\PlaceholderValue;
+use PHPUnit\Framework\TestCase;
 
-class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
+class PlaceholderValueTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $GLOBALS['foo'] = 'bar';
         $GLOBALS['bar'] = '%env(bar)%';
@@ -28,7 +29,7 @@ class PlaceholderValueTest extends \PHPUnit_Framework_TestCase
         putenv('recursion=%env(recursion)%');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($GLOBALS['foo'], $GLOBALS['bar'], $GLOBALS['integer'], $GLOBALS['fortyTwo']);
         putenv('foo');

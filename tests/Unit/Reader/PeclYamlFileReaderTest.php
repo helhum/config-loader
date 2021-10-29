@@ -13,10 +13,11 @@ namespace Helhum\ConfigLoader\Tests\Reader;
 
 use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\Reader\PeclYamlFileReader;
+use PHPUnit\Framework\TestCase;
 
-class PeclYamlFileReaderTest extends \PHPUnit_Framework_TestCase
+class PeclYamlFileReaderTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         if (!extension_loaded('yaml')) {
             $this->markTestSkipped('Not able to test pecl yaml reader without pecl yaml extension being installed.');

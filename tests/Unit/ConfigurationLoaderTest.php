@@ -12,10 +12,12 @@ namespace Helhum\ConfigLoader\Tests\Unit;
  */
 
 use Helhum\ConfigLoader\ConfigurationLoader;
+use Helhum\ConfigLoader\InvalidConfigurationFileException;
 use Helhum\ConfigLoader\Reader\EnvironmentReader;
 use Helhum\ConfigLoader\Reader\PhpFileReader;
+use PHPUnit\Framework\TestCase;
 
-class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
+class ConfigurationLoaderTest extends TestCase
 {
     protected $baseConfig = [
         'key' => 'base',
@@ -43,10 +45,10 @@ class ConfigurationLoaderTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \Helhum\ConfigLoader\InvalidConfigurationFileException
      */
     public function throwsExceptionOnInvalidConfigFiles()
     {
+        $this->expectException(InvalidConfigurationFileException::class);
         $configLoader = new ConfigurationLoader(
             [
                 new PhpFileReader(__DIR__ . '/Fixture/conf/broken.php'),

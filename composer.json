@@ -3,12 +3,12 @@
     "description" : "Generic config loader with context and environment support.",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">7.0"
+        "php": ">=7.2"
     },
     "require-dev": {
-        "symfony/yaml": "^2.8 || ^3.3 || ^4.0",
-        "phpunit/phpunit": "^5.0",
-        "mikey179/vfsstream": "^1.6"
+        "symfony/yaml": "^2.8 || ^3.3 || ^4.0 || ^5.0",
+        "phpunit/phpunit": "^8.5",
+        "php-parallel-lint/php-parallel-lint": "^1.2"
     },
     "suggest": {
         "ext-yaml": "For improved performance when parsing yaml files you should use the PECL YAML Parser php extension",

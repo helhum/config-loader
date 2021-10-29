@@ -16,8 +16,9 @@ use Helhum\ConfigLoader\Processor\Placeholder\ConfigurationPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\EnvironmentPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\GlobalsPlaceholder;
 use Helhum\ConfigLoader\Processor\Placeholder\PlaceholderCollection;
+use PHPUnit\Framework\TestCase;
 
-class ConfigurationExporterTest extends \PHPUnit_Framework_TestCase
+class ConfigurationExporterTest extends TestCase
 {
     public function properlyExportsValueToPhpCodeDataProvider(): array
     {

@@ -16,8 +16,9 @@ use Helhum\ConfigLoader\InvalidArgumentException;
 use Helhum\ConfigLoader\Reader\ClosureConfigReader;
 use Helhum\ConfigLoader\Reader\ConfigReaderInterface;
 use Helhum\ConfigLoader\Reader\RootConfigFileReader;
+use PHPUnit\Framework\TestCase;
 
-class ConfigurationReaderFactoryTest extends \PHPUnit_Framework_TestCase
+class ConfigurationReaderFactoryTest extends TestCase
 {
     /**
      * @test
