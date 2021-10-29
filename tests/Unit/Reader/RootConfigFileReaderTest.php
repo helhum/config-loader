@@ -14,8 +14,9 @@ namespace Helhum\ConfigLoader\Tests\Reader;
 use Helhum\ConfigLoader\ConfigurationReaderFactory;
 use Helhum\ConfigLoader\InvalidArgumentException;
 use Helhum\ConfigLoader\Reader\RootConfigFileReader;
+use PHPUnit\Framework\TestCase;
 
-class RootConfigFileReaderTest extends \PHPUnit_Framework_TestCase
+class RootConfigFileReaderTest extends TestCase
 {
     private $resourceBaseBath;
 

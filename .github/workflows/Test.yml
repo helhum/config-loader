@@ -1,0 +1,67 @@
+name: Test
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+
+    Tests:
+        name: 'PHP ${{ matrix.php }} - ${{ matrix.dependency-version }} - ${{ matrix.extensions }}'
+        runs-on: ubuntu-18.04
+
+        strategy:
+            fail-fast: false
+            matrix:
+                php: [ '7.2', '7.3', '7.4', '8.0' ]
+                dependency-version: [ lowest, stable ]
+                extensions: [ 'yaml', ':yaml' ]
+
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+
+            -   name: Composer Cache Vars
+                id: composer-cache-vars
+                run: |
+                    echo "::set-output name=dir::$(composer config cache-files-dir)"
+                    echo "::set-output name=timestamp::$(date +"%s")"
+
+            -   name: Cache Composer dependencies
+                uses: actions/cache@v2
+                with:
+                    path: ${{ steps.composer-cache-vars.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ matrix.php }}-${{ steps.composer-cache-vars.outputs.timestamp }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ matrix.php }}-
+                        ${{ runner.os }}-composer-${{ matrix.dependency-version }}-
+                        ${{ runner.os }}-composer-
+                        ${{ runner.os }}-composer-
+
+            -   name: Set up PHP Version ${{ matrix.php }}
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: ${{ matrix.extensions }}
+                    tools: composer:v2
+                    coverage: none
+
+            -   name: Environment Check
+                run: |
+                    php --version
+                    composer --version
+
+            -   name: Validate composer.json and composer.lock
+                run: composer validate
+
+            -   name: Install
+                run: |
+                    composer update --prefer-dist --no-interaction --prefer-${{ matrix.dependency-version }}
+
+            -   name: Lint
+                run: vendor/bin/parallel-lint --exclude vendor --exclude .Build .
+
+            -   name: Unit Tests
+                run: vendor/bin/phpunit tests/Unit/

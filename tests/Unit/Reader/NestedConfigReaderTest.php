@@ -12,8 +12,9 @@ namespace Helhum\ConfigLoader\Tests\Reader;
  */
 
 use Helhum\ConfigLoader\Reader\NestedConfigReader;
+use PHPUnit\Framework\TestCase;
 
-class NestedConfigReaderTest extends \PHPUnit_Framework_TestCase
+class NestedConfigReaderTest extends TestCase
 {
     /**
      * @test
