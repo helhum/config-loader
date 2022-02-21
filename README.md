@@ -1,11 +1,11 @@
-# Configuration Loader [![Build Status](https://travis-ci.org/helhum/config-loader.svg?branch=master)](https://travis-ci.org/helhum/config-loader)
+# Configuration Loader [![Build Status](https://github.com/helhum/config-loader/actions/workflows/Test.yml/badge.svg)](https://github.com/helhum/config-loader/actions/workflows/Test.yml)
 
 This is just a class, which helps you to merge a base configuration with configuration
 from different contexts and the environment.
 
 Just require it using composer: `composer require helhum/config-loader`
 
-## Basic usage:
+## Basic usage
 
 ```php
 $context = 'production';
@@ -22,7 +22,7 @@ $configLoader = new \Helhum\ConfigLoader\ConfigurationLoader(
 $config = $configLoader->load();
 ```
 
-## Basic usage cached:
+## Basic usage cached
 
 ```php
 $context = 'production';
@@ -48,6 +48,7 @@ $config = $configLoader->load();
 ```
 
 ## Using processors
+
 It is possible to add one or more processors to the config loader.
 
 ```php
@@ -66,8 +67,9 @@ $config = $configLoader->load();
 ```
 
 ## Advanced usage
-Instead of hard coding which configuration sources should be included, it is possible to include
-multiple sources from within one configuration file.
+
+Instead of hard coding which configuration sources should be included, it is
+possible to include multiple sources from within one configuration file.
 
 ```php
 $context = 'production';
@@ -91,6 +93,8 @@ imports:
 
 ## Feedback
 
-Any feedback is appreciated. Please write bug reports, feature request, create pull requests, or just drop me a "thank you" via [Twitter](https://twitter.com/helhum) or spread the word.
+Any feedback is appreciated. Please write bug reports, feature request, create
+pull requests, or just drop me a "thank you" via [Twitter](https://twitter.com/helhum)
+or spread the word.
 
 Thank you!
