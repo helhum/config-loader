@@ -50,16 +50,19 @@ class PlaceholderCollection implements \Iterator
         return new self($nonPhpCapablePlaceholders);
     }
 
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->placeholders);
     }
 
+    #[\ReturnTypeWillChange]
     public function next()
     {
         next($this->placeholders);
     }
 
+    #[\ReturnTypeWillChange]
     public function key()
     {
         key($this->placeholders);
@@ -70,6 +73,7 @@ class PlaceholderCollection implements \Iterator
         return current($this->placeholders) !== false;
     }
 
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         reset($this->placeholders);
