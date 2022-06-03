@@ -41,6 +41,15 @@ class ConfigurationReaderFactory
     private function registerDefaultReaderTypes()
     {
         $this->readerTypes = [
+            'class' => [
+                'factory' => function (string $resource, array $options) {
+                    if (!class_exists($resource)) {
+                        throw new InvalidArgumentException(sprintf('Invalid reader class provided "%s". Must be a class implementing ConfigReaderInterface', $resource), 1654212558);
+                    }
+                    return new $resource($this, $options);
+                },
+                'isFileResource' => false,
+            ],
             'env' => [
                 'factory' => function (string $resource) {
                     return new EnvironmentReader($resource);

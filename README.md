@@ -89,6 +89,7 @@ The configuration file can then include an `import` section:
 imports:
     - { resource: 'config.*.yml', type: glob }
     - { resource: 'env.yml' }
+    - { resource: \MyNamespace\MyConfigReader, type: class, option: 'My option' }
 ```
 
 ## Feedback
