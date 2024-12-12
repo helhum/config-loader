@@ -32,7 +32,7 @@ class ConfigurationReaderFactory
 
     private $addedReaderTypes = [];
 
-    public function __construct(string $resourceBasePath = null)
+    public function __construct(?string $resourceBasePath = null)
     {
         $this->resourceBasePath = $resourceBasePath;
         $this->registerDefaultReaderTypes();
@@ -124,7 +124,7 @@ class ConfigurationReaderFactory
         return $newFactory;
     }
 
-    private function createDecoratedReader(string $resource, array $options = [], string $typeOverride = null): ConfigReaderInterface
+    private function createDecoratedReader(string $resource, array $options = [], ?string $typeOverride = null): ConfigReaderInterface
     {
         $readerOptions = array_diff_key($options, ['path' => true, 'exclude' => true]);
         $reader = $this->createReaderFromConfig($resource, $readerOptions, $typeOverride);
@@ -143,7 +143,7 @@ class ConfigurationReaderFactory
         return $reader;
     }
 
-    private function createReaderFromConfig(string $resource, array $options = [], string $typeOverride = null): ConfigReaderInterface
+    private function createReaderFromConfig(string $resource, array $options = [], ?string $typeOverride = null): ConfigReaderInterface
     {
         $type = $this->resolveType($resource, $options, $typeOverride);
         if ($this->readerTypes[$type]['factory'] instanceof ConfigReaderInterface) {
@@ -155,7 +155,7 @@ class ConfigurationReaderFactory
         throw new InvalidArgumentException(sprintf('Invalid reader provided for type "%s". Must be callable or ConfigReaderInterface', $resource), 1516838223);
     }
 
-    private function resolveType(string $resource, array $options, string $typeOverride = null)
+    private function resolveType(string $resource, array $options, ?string $typeOverride = null)
     {
         $type = $options['type'] ?? pathinfo($resource, PATHINFO_EXTENSION);
         if ($typeOverride !== null) {

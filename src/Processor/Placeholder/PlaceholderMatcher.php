@@ -21,7 +21,7 @@ class PlaceholderMatcher
      */
     private $supportedTypes;
 
-    public function __construct(array $supportedTypes = null)
+    public function __construct(?array $supportedTypes = null)
     {
         $this->supportedTypes = $supportedTypes;
     }
@@ -32,14 +32,14 @@ class PlaceholderMatcher
      * @param array|null $types
      * @return bool
      */
-    public function isPlaceHolder($value, array $types = null): bool
+    public function isPlaceHolder($value, ?array $types = null): bool
     {
         trigger_error(__FUNCTION__ . ' is deprecated. Use PlaceholderMatcher::hasPlaceHolders instead', \E_USER_DEPRECATED);
 
         return $this->hasPlaceHolders($value, $types);
     }
 
-    public function hasPlaceHolders($value, array $types = null): bool
+    public function hasPlaceHolders($value, ?array $types = null): bool
     {
         if (!$this->matches($value)) {
             return false;
@@ -64,7 +64,7 @@ class PlaceholderMatcher
      * @param array|null $types
      * @return PlaceholderMatch
      */
-    public function extractPlaceHolder($value, array $types = null): PlaceholderMatch
+    public function extractPlaceHolder($value, ?array $types = null): PlaceholderMatch
     {
         trigger_error(__FUNCTION__ . ' is deprecated. Use PlaceholderMatcher::extractPlaceHolders instead', \E_USER_DEPRECATED);
 
@@ -76,7 +76,7 @@ class PlaceholderMatcher
      * @param array|null $types
      * @return PlaceholderMatch[]
      */
-    public function extractPlaceHolders($value, array $types = null): array
+    public function extractPlaceHolders($value, ?array $types = null): array
     {
         if (func_num_args() < 2) {
             $types = $types ?: $this->supportedTypes;

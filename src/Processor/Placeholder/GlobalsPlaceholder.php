@@ -44,7 +44,7 @@ class GlobalsPlaceholder implements PhpExportablePlaceholderInterface
 
     public function representsPhpCode(string $accessor, array $referenceConfig = []): string
     {
-        $globalPath = str_getcsv($accessor, '.');
+        $globalPath = str_getcsv($accessor, '.', '"', '\\');
 
         return '$GLOBALS[\'' . implode('\'][\'', array_map([$this, 'escapePhpValue'], $globalPath)) . '\']';
     }

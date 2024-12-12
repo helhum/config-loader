@@ -54,8 +54,8 @@ class PlaceholderMatch
         string $dataType,
         string $accessor,
         bool $directMatch,
-        bool $key = null,
-        string $path = null
+        ?bool $key = null,
+        ?string $path = null
     ) {
         $this->placeholder = $placeholder;
         $this->type = $type;

@@ -30,7 +30,7 @@ class GlobFileReader implements ConfigReaderInterface
      */
     private $globFiles;
 
-    public function __construct(string $resourceFile, ConfigurationReaderFactory $factory = null)
+    public function __construct(string $resourceFile, ?ConfigurationReaderFactory $factory = null)
     {
         $this->resourceFile = $resourceFile;
         $this->factory = $factory ?: new ConfigurationReaderFactory();
