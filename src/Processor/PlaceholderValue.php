@@ -50,7 +50,7 @@ class PlaceholderValue implements ConfigProcessorInterface
      */
     private $placeHolders;
 
-    public function __construct(bool $strict = true, PlaceholderCollection $placeHolders = null, PlaceholderMatcher $placeholderMatcher = null)
+    public function __construct(bool $strict = true, ?PlaceholderCollection $placeHolders = null, ?PlaceholderMatcher $placeholderMatcher = null)
     {
         $this->strict = $strict;
         $this->placeHolders = $placeHolders ?? new PlaceholderCollection([

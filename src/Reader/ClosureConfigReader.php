@@ -27,7 +27,7 @@ class ClosureConfigReader implements ConfigReaderInterface
      */
     private $hasConfigClosure;
 
-    public function __construct(\Closure $readConfigClosure, \Closure $hasConfigClosure = null)
+    public function __construct(\Closure $readConfigClosure, ?\Closure $hasConfigClosure = null)
     {
         $this->readConfigClosure = $readConfigClosure;
         $this->hasConfigClosure = $hasConfigClosure;

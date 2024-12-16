@@ -10,18 +10,18 @@ jobs:
 
     Tests:
         name: 'PHP ${{ matrix.php }} - ${{ matrix.dependency-version }} - ${{ matrix.extensions }}'
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-24.04
 
         strategy:
             fail-fast: false
             matrix:
-                php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
+                php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4' ]
                 dependency-version: [ lowest, stable ]
                 extensions: [ 'yaml', ':yaml' ]
 
         steps:
             -   name: Checkout
-                uses: actions/checkout@v2
+                uses: actions/checkout@v4
 
             -   name: Composer Cache Vars
                 id: composer-cache-vars
@@ -30,7 +30,7 @@ jobs:
                     echo "::set-output name=timestamp::$(date +"%s")"
 
             -   name: Cache Composer dependencies
-                uses: actions/cache@v2
+                uses: actions/cache@v4
                 with:
                     path: ${{ steps.composer-cache-vars.outputs.dir }}
                     key: ${{ runner.os }}-composer-${{ matrix.dependency-version }}-${{ matrix.php }}-${{ steps.composer-cache-vars.outputs.timestamp }}

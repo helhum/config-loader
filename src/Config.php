@@ -30,7 +30,7 @@ class Config
         if ($configPath === '') {
             throw new InvalidArgumentException('Path must be not be empty string', 1496758719);
         }
-        $path = str_getcsv($configPath, '.');
+        $path = str_getcsv($configPath, '.', '"', '\\');
         // Loop through each part and extract its value
         $value = $config;
         foreach ($path as $segment) {
@@ -66,7 +66,7 @@ class Config
             throw new InvalidArgumentException('Path must be not be empty string', 1496472912);
         }
         // Extract parts of the configPath
-        $path = str_getcsv($configPath, '.');
+        $path = str_getcsv($configPath, '.', '"', '\\');
         // Point to the root of the array
         $pointer = &$array;
         // Find configPath in given array
@@ -105,7 +105,7 @@ class Config
             throw new InvalidArgumentException('Path must be not be empty string', 1496759385);
         }
         // Extract parts of the path
-        $path = str_getcsv($configPath, '.');
+        $path = str_getcsv($configPath, '.', '"', '\\');
         $pathDepth = count($path);
         $currentDepth = 0;
         $pointer = &$config;
